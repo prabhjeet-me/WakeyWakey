@@ -1,0 +1,55 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+  "name": "WakeyWakey",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/python:2-3.13-trixie",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": ".devcontainer/scripts/postCreateCommand.sh",
+
+  // Configure tool-specific properties.
+  // VS Code customization
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "DavidAnson.vscode-markdownlint",
+        "pkief.material-icon-theme",
+        "github.vscode-github-actions",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "biernew.markdown-mermaid",
+        "ms-python.autopep8",
+        "ms-azuretools.vscode-containers"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.editorAssociations": {
+          "*.md": "vscode.markdown.preview.editor"
+        },
+        "explorer.compactFolders": false,
+        "python.analysis.typeCheckingMode": "standard"
+      }
+    }
+  },
+
+  "mounts": [
+    // Mount local directory for packages
+    "source=.devcontainer/volumes/packages,target=/home/vscode/.local/lib/python3.13/site-packages,type=bind,consistency=cached"
+  ]
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
