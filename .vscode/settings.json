@@ -5,10 +5,24 @@
     "biernew",
     "eamodio",
     "esbenp",
+    "fastapi",
+    "librosa",
+    "mfcc",
     "mhutchie",
+    "newaxis",
+    "numpy",
+    "onnx",
+    "onnxruntime",
+    "onnxscript",
     "pkief",
+    "pycache",
+    "soundfile",
+    "tensorflowjs",
     "toolsai",
+    "torchaudio",
     "trixie",
-    "Wakey"
+    "uvicorn",
+    "Wakey",
+    "wakeywakey"
   ]
 }

@@ -7,7 +7,8 @@
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node": {}
   },
 
   // Use 'postCreateCommand' to run commands after the container is created.
@@ -29,7 +30,9 @@
         "ms-toolsai.jupyter",
         "biernew.markdown-mermaid",
         "ms-python.autopep8",
-        "ms-azuretools.vscode-containers"
+        "ms-azuretools.vscode-containers",
+        "lijian-onnx-viewer.onnxviewer",
+        "angular.ng-template"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -40,7 +43,8 @@
           "*.md": "vscode.markdown.preview.editor"
         },
         "explorer.compactFolders": false,
-        "python.analysis.typeCheckingMode": "standard"
+        "python.analysis.typeCheckingMode": "standard",
+        "autopep8.args": ["--indent-size=2"]
       }
     }
   },
