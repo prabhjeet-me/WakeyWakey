@@ -3,11 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:playground": "node dist/playground/server/server.mjs"
+    "serve:ssr:playground": "node dist/playground/server/server.mjs",
+    "wakeywakey:watch": "ng build wakeywakey --watch",
+    "playground:serve": "ng serve playground --host 0.0.0.0"
   },
   "prettier": {
     "printWidth": 100,
