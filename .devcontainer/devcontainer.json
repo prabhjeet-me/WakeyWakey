@@ -44,7 +44,10 @@
         },
         "explorer.compactFolders": false,
         "python.analysis.typeCheckingMode": "standard",
-        "autopep8.args": ["--indent-size=2"]
+        "autopep8.args": ["--indent-size=2"],
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "always"
+        }
       }
     }
   },

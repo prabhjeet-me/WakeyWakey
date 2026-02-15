@@ -15,10 +15,9 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "wakeywakey": [
-        "./dist/wakeywakey"
-      ]
-    }
+      "wakeywakey": ["./dist/wakeywakey"]
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

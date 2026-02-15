@@ -7,6 +7,7 @@
     "esbenp",
     "fastapi",
     "librosa",
+    "melspectrogram",
     "mfcc",
     "mhutchie",
     "newaxis",
@@ -16,12 +17,14 @@
     "onnxscript",
     "pkief",
     "pycache",
+    "silero",
     "soundfile",
     "tensorflowjs",
     "toolsai",
     "torchaudio",
     "trixie",
     "uvicorn",
+    "wakeword",
     "Wakey",
     "wakeywakey"
   ]
