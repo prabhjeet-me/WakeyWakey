@@ -13,7 +13,12 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "paths": {
+      "wakeywakey": [
+        "./dist/wakeywakey"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -22,5 +27,19 @@
     "typeCheckHostBindings": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/wakeywakey/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/wakeywakey/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/playground/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/playground/tsconfig.spec.json"
+    }
+  ]
 }
