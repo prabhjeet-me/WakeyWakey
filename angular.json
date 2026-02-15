@@ -50,6 +50,11 @@
               {
                 "glob": "**/*",
                 "input": "projects/playground/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/onnxruntime-web/dist/",
+                "output": "ort"
               }
             ],
             "styles": ["projects/playground/src/styles.scss"],
