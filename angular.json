@@ -26,6 +26,16 @@
           "options": {
             "tsConfig": "projects/wakeywakey/tsconfig.spec.json"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/wakeywakey/**/*.ts",
+              "projects/wakeywakey/**/*.html"
+            ],
+            "eslintConfig": "projects/wakeywakey/eslint.config.js"
+          }
         }
       }
     },
@@ -57,7 +67,9 @@
                 "output": "ort"
               }
             ],
-            "styles": ["projects/playground/src/styles.scss"],
+            "styles": [
+              "projects/playground/src/styles.scss"
+            ],
             "server": "projects/playground/src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -114,7 +126,19 @@
                 "input": "projects/playground/public"
               }
             ],
-            "styles": ["projects/playground/src/styles.scss"]
+            "styles": [
+              "projects/playground/src/styles.scss"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/playground/**/*.ts",
+              "projects/playground/**/*.html"
+            ],
+            "eslintConfig": "projects/playground/eslint.config.js"
           }
         }
       }
