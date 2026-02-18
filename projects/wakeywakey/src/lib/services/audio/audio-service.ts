@@ -24,6 +24,9 @@ export class AudioService {
     // Init VAD
     this._vad.init();
 
+    // Fire ready event
+    this._event.ready.next();
+
     data.subscribe(async (data) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;

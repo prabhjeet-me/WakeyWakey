@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { SpeechEvent, WakeWordEvent } from '../../wakeywakey-component.type';
+import { SpeechEvent, WakeWordEvent } from './event-service.type';
 
 @Injectable()
 export class EventService {
