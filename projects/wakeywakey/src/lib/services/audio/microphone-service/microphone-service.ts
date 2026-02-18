@@ -38,6 +38,7 @@ export class MicrophoneService implements OnDestroy {
   private _audioContext?: AudioContext;
 
   constructor() {
+    // Init mic
     this._init();
   }
 
