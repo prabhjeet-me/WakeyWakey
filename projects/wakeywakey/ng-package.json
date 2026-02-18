@@ -3,5 +3,12 @@
   "dest": "../../dist/wakeywakey",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    {
+      "glob": "**/*.onnx",
+      "input": "src/assets/models/",
+      "output": "./assets/models"
+    }
+  ]
 }
