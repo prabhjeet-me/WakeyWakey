@@ -15,7 +15,7 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "wakeywakey": ["./dist/wakeywakey"]
+      "wakeywakey": ["./projects/wakeywakey/src/public-api.ts", "./dist/wakeywakey"]
     },
     "useDefineForClassFields": false
   },
