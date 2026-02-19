@@ -1,9 +1,6 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
   "name": "WakeyWakey",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/python:2-3.13-trixie",
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
@@ -26,13 +23,11 @@
         "DavidAnson.vscode-markdownlint",
         "pkief.material-icon-theme",
         "github.vscode-github-actions",
-        "ms-python.python",
-        "ms-toolsai.jupyter",
         "biernew.markdown-mermaid",
-        "ms-python.autopep8",
         "ms-azuretools.vscode-containers",
         "lijian-onnx-viewer.onnxviewer",
-        "angular.ng-template"
+        "angular.ng-template",
+        "hediet.vscode-drawio"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -43,20 +38,10 @@
           "*.md": "vscode.markdown.preview.editor"
         },
         "explorer.compactFolders": false,
-        "python.analysis.typeCheckingMode": "standard",
-        "autopep8.args": ["--indent-size=2"],
         "editor.codeActionsOnSave": {
           "source.organizeImports": "always"
         }
       }
     }
-  },
-
-  "mounts": [
-    // Mount local directory for packages
-    "source=.devcontainer/volumes/packages,target=/home/vscode/.local/lib/python3.13/site-packages,type=bind,consistency=cached"
-  ]
-
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  // "remoteUser": "root"
+  }
 }
