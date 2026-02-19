@@ -65,8 +65,8 @@
               },
               {
                 "glob": "**/*",
-                "input": "projects/wakeywakey/src/assets/models",
-                "output": "models"
+                "input": "projects/wakeywakey/src/assets",
+                "output": "."
               }
             ],
             "styles": ["projects/playground/src/styles.scss"],

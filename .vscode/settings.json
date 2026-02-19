@@ -6,6 +6,7 @@
     "eamodio",
     "esbenp",
     "fastapi",
+    "hediet",
     "librosa",
     "LSTM",
     "melspectrogram",
