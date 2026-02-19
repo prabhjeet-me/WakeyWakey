@@ -84,7 +84,7 @@ export class MicrophoneService implements OnDestroy {
       });
 
       this._event.log.next(
-        `${MicrophoneService.name}: Microphone permission granted (deviceid: '${deviceId || 'default'}')!`,
+        `${MicrophoneService.name}: Microphone permission granted (deviceid: '${deviceId ?? 'default'}')!`,
       );
 
       // save list of microphones
@@ -111,7 +111,7 @@ export class MicrophoneService implements OnDestroy {
 
     // on message
     worklet.port.onmessage = async (event) => {
-      const data = (event.data as MicrophoneProcessorData) || null;
+      const data = (event.data as MicrophoneProcessorData) ?? null;
       if (!data) return;
 
       // emit chunk

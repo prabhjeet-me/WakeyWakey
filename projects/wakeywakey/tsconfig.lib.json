@@ -7,12 +7,9 @@
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
-    "types": []
+    "types": ["dom-speech-recognition"],
+    "useDefineForClassFields": false
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts"]
 }

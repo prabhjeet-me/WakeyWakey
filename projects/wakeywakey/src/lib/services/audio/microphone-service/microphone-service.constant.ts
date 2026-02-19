@@ -36,7 +36,7 @@ export const MICROPHONE_PROCESSOR = `
       return (clamped - minDb) / (maxDb - minDb);
     }
 
-    // runs every 128 frames. ~ every 2.67 ms (at 48kHz)
+    // runs every 128 frames. ~ every 2.67 ms (at 48kHz), ~ 8ms (at 16KHz)
     process(inputList) {
       const firstInput = inputList[0];
 
@@ -60,7 +60,7 @@ export const MICROPHONE_PROCESSOR = `
       // once buffer is full, break
       if (this.writeIndex === this.frameBlockSize) {
         const rms = Math.sqrt(sum / firstChannelSamples.length);
-        const db = 20 * Math.log10(rms || 0.00001);
+        const db = 20 * Math.log10(rms ?? 0.00001);
         this.writeIndex = 0;
 
         // send to main thread
