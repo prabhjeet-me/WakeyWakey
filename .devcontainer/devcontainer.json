@@ -40,7 +40,8 @@
         "explorer.compactFolders": false,
         "editor.codeActionsOnSave": {
           "source.organizeImports": "always"
-        }
+        },
+        "hediet.vscode-drawio.appearance": "automatic"
       }
     }
   }

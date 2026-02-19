@@ -3,7 +3,7 @@ set -euo pipefail
 
 source .devcontainer/scripts/util.sh
 
-log blue "Updating npm"
+log blue "Updating npm..."
 
 npm install -g npm@11.10.0
 
