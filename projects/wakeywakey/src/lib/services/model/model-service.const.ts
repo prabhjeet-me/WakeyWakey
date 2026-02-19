@@ -1,0 +1,1 @@
+export const DEFAULT_INFERENCE_SCORE = 0.5;

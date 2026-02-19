@@ -13,9 +13,16 @@ export class ConfigService {
   }
 
   /**
-   * Inference config
+   * Onnx config
    */
-  get inference() {
-    return this._config.inference;
+  get onnx() {
+    return this._config.onnx;
+  }
+
+  /**
+   * Throttle time
+   */
+  get throttleTime() {
+    return this._config.throttleTime;
   }
 }

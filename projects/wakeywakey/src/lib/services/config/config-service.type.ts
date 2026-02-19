@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { AudioConfig } from '../audio/audio-service.type';
-import { InferenceConfig } from '../inference/inference-service.type';
+import { OnnxConfig } from '../model/model-service.type';
 
 /**
  * Wakey wakey configuration
@@ -12,9 +12,17 @@ export interface Config {
   audio: AudioConfig;
 
   /**
-   * Inference config
+   * Onnx config
    */
-  inference: InferenceConfig;
+  onnx: OnnxConfig;
+
+  /**
+   * In sliding window, there is a possibility of detecting wakeword mode than once.
+   * This allows a cool down time before processing subsequent detections
+   *
+   * Default: 1000 (1 seconds)
+   */
+  throttleTime?: number;
 }
 
 /**
