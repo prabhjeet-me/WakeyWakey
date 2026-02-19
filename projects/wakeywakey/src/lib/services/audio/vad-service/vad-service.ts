@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Tensor, TypedTensor } from 'onnxruntime-web';
 import { EventService } from '../../event/event-service';
-import { StoreService } from '../../store/store-service';
+import { ModelService } from '../../model/model-service';
 import { SAMPLE_RATE } from '../microphone-service/microphone-service.constant';
 import { InputMetadata, VADState } from './vad-service.type';
 
@@ -11,7 +11,7 @@ export class VadService {
    * Dependencies
    */
   private readonly _event = inject(EventService);
-  private readonly _store = inject(StoreService);
+  private readonly _model = inject(ModelService);
 
   /**
    * VAD Shape
@@ -27,7 +27,7 @@ export class VadService {
    * Get session
    */
   private get _session() {
-    return this._store.inferenceSession('silero_vad')!;
+    return this._model.sileroVAD;
   }
 
   /**
@@ -80,7 +80,7 @@ export class VadService {
    * Ex: [2, 1, 64]
    */
   private _getShape() {
-    const { shape } = (this._session.inputMetadata.find((e) => e.name === 'h') ||
+    const { shape } = (this._session.inputMetadata.find((e) => e.name === 'h') ??
       {}) as InputMetadata;
 
     const vadState = [];
