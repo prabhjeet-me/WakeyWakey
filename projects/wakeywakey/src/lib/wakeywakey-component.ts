@@ -59,7 +59,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
   /**
    * Fires silence is detected
    */
-  @Output() silence = new EventEmitter<SpeechEvent>();
+  @Output() silence = new EventEmitter<Float32Array>();
 
   /**
    * Dependencies

@@ -25,7 +25,7 @@ export interface WakeWordEvent extends SpeechEvent {
   inferenceScore: number;
 
   /**
-   * Chunk on wake word detected
+   * Chunk of detected wakeword
    */
   chunk: Float32Array[];
 }

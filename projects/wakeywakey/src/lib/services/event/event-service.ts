@@ -37,5 +37,5 @@ export class EventService {
   /**
    * Fires silence is detected
    */
-  readonly silence = new Subject<SpeechEvent>();
+  readonly silence = new Subject<Float32Array>();
 }

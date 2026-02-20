@@ -1,0 +1,1 @@
+export const DEFAULT_SILENCE_DURATION = 1000;

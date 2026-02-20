@@ -1,5 +1,21 @@
-import { Injectable, OnDestroy, inject } from '@angular/core';
-import { concatMap, filter, scan, share, withLatestFrom } from 'rxjs';
+import { inject, Injectable, OnDestroy } from '@angular/core';
+import {
+  concatMap,
+  delay,
+  distinctUntilChanged,
+  EMPTY,
+  filter,
+  map,
+  scan,
+  share,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  throttleTime,
+  timer,
+  withLatestFrom,
+} from 'rxjs';
 import { SubSink } from 'subsink';
 import { ConfigService } from '../config/config-service';
 import { EventService } from '../event/event-service';
@@ -7,6 +23,7 @@ import { SpeechEvent } from '../event/event-service.type';
 import { DEFAULT_INFERENCE_SCORE } from '../model/model-service.const';
 import { VAD_HANGOVER_FRAMES, VadState } from '../model/model-service.type';
 import { PipelineService } from '../pipeline/pipeline-service';
+import { DEFAULT_SILENCE_DURATION } from './audio-service.const';
 import { MicrophoneService } from './microphone-service/microphone-service';
 import { SpeakerService } from './speaker-service/speaker-service';
 import { VadService } from './vad-service/vad-service';
@@ -56,28 +73,23 @@ export class AudioService implements OnDestroy {
       });
     });
 
-    // Infer speech
-    this._inferSpeech();
+    this._listenForWakeword();
+    this._captureCommandAfterWakeword();
   }
 
   /**
-   * Infer speech
+   * Identifies the wakeword and emits the event
    */
-  private _inferSpeech() {
+  private _listenForWakeword() {
     const vad$ = this._getWakeWordStream();
 
     this._subs.sink = this._event.speech
       .pipe(
-        // 1. Combine the raw speech with the current buffer state
         withLatestFrom(vad$),
-
-        // 2. Run your async ML pipeline
         concatMap(async ([speech, vadState]) => {
           const score = await this._pipeline.run(speech);
           return { speech, score, chunk: vadState.buffer };
         }),
-
-        // 3. Filter for detections
         filter(
           ({ score }) =>
             score > (this._config.onnx.wakewordInferenceThreshold ?? DEFAULT_INFERENCE_SCORE),
@@ -87,6 +99,77 @@ export class AudioService implements OnDestroy {
         this._speaker.playUp();
         this._event.wakeword.next({ ...speech, inferenceScore: score, chunk });
       });
+  }
+
+  /**
+   * New logic: Captures the full command audio after a wakeword
+   */
+  private _captureCommandAfterWakeword() {
+    const SILENCE_DURATION = this._config.audio.silenceThreshold ?? DEFAULT_SILENCE_DURATION;
+    const VAD_THRESHOLD = this._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD;
+
+    this._subs.sink = this._event.wakeword
+      .pipe(
+        throttleTime(1000),
+        tap(() => {
+          this._event.recording.next(); // recording event
+        }),
+
+        switchMap(() => {
+          const commandChunks: Float32Array[] = [];
+
+          const speech$ = this._event.speech.pipe(
+            tap((speech) => commandChunks.push(speech.sample)),
+            share(),
+          );
+
+          const silence$ = speech$.pipe(
+            map((s) => s.vadScore < VAD_THRESHOLD),
+            distinctUntilChanged(), // only emit when silence state changes
+          );
+
+          return silence$.pipe(
+            delay(500),
+            switchMap((isSilent) => {
+              if (!isSilent) {
+                return EMPTY; // if voice cancel the timer
+              }
+
+              // silence started, start timer
+              return timer(SILENCE_DURATION).pipe(
+                takeUntil(
+                  silence$.pipe(filter((silent) => !silent)), // cancel if voice resumes
+                ),
+              );
+            }),
+            take(1),
+            map(() => this._flatten(commandChunks)),
+          );
+        }),
+      )
+      .subscribe({
+        next: (chunk) => {
+          this._speaker.playDown();
+          this._event.silence.next(chunk);
+        },
+        error: (err) => {
+          this._event.exception.next(err);
+        },
+      });
+  }
+
+  /**
+   * Helper to flatten array of buffers into a single Float32Array
+   */
+  private _flatten(chunks: Float32Array[]): Float32Array {
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+    const result = new Float32Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return result;
   }
 
   /**
