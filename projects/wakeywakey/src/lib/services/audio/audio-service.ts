@@ -26,6 +26,7 @@ import { PipelineService } from '../pipeline/pipeline-service';
 import { DEFAULT_SILENCE_DURATION } from './audio-service.const';
 import { MicrophoneService } from './microphone-service/microphone-service';
 import { SpeakerService } from './speaker-service/speaker-service';
+import { SpeechRecognitionService } from './speech-recognition/speech-recognition-service';
 import { VadService } from './vad-service/vad-service';
 import { DEFAULT_VAD_THRESHOLD } from './vad-service/vad-service.const';
 
@@ -40,6 +41,7 @@ export class AudioService implements OnDestroy {
   private readonly _vad = inject(VadService);
   private readonly _pipeline = inject(PipelineService);
   private readonly _speaker = inject(SpeakerService);
+  private readonly _speechRecognition = inject(SpeechRecognitionService);
 
   private readonly _subs = new SubSink();
 
@@ -55,6 +57,8 @@ export class AudioService implements OnDestroy {
 
     // Init VAD
     this._vad.init();
+
+    this._speechRecognition.init();
 
     // Fire ready event
     this._event.ready.next();
@@ -113,6 +117,7 @@ export class AudioService implements OnDestroy {
         throttleTime(1000),
         tap(() => {
           this._event.recording.next(); // recording event
+          this._speechRecognition.start();
         }),
 
         switchMap(() => {
@@ -150,7 +155,12 @@ export class AudioService implements OnDestroy {
       .subscribe({
         next: (chunk) => {
           this._speaker.playDown();
-          this._event.silence.next(chunk);
+          this._speechRecognition.stop(); // stop recognition
+
+          this._event.silence.next({
+            chunk,
+            transcript: this._speechRecognition.transcript,
+          });
         },
         error: (err) => {
           this._event.exception.next(err);
@@ -165,10 +175,12 @@ export class AudioService implements OnDestroy {
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
     const result = new Float32Array(totalLength);
     let offset = 0;
+
     for (const chunk of chunks) {
       result.set(chunk, offset);
       offset += chunk.length;
     }
+
     return result;
   }
 

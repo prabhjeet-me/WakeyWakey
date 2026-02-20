@@ -29,3 +29,18 @@ export interface WakeWordEvent extends SpeechEvent {
    */
   chunk: Float32Array[];
 }
+
+/**
+ * Silence event
+ */
+export interface SilenceEvent {
+  /**
+   * Chunk of detected wakeword
+   */
+  chunk: Float32Array;
+
+  /**
+   * Transcript of speech
+   */
+  transcript: string;
+}

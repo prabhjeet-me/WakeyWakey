@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { SpeechEvent, WakeWordEvent } from './event-service.type';
+import { SilenceEvent, SpeechEvent, WakeWordEvent } from './event-service.type';
 
 @Injectable()
 export class EventService {
@@ -37,5 +37,5 @@ export class EventService {
   /**
    * Fires silence is detected
    */
-  readonly silence = new Subject<Float32Array>();
+  readonly silence = new Subject<SilenceEvent>();
 }
