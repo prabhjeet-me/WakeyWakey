@@ -1,13 +1,63 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { WakeyWakey } from 'wakeywakey';
+import { Component } from '@angular/core';
+import {
+  WakeyWakeyAudioUtil,
+  WakeyWakeyComponent,
+  WakeyWakeySilenceEvent,
+  WakeyWakeySpeechEvent,
+  WakeyWakeyWordEvent,
+} from 'wakeywakey';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, WakeyWakey],
+  imports: [WakeyWakeyComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  host: { ngSkipHydration: 'true' },
 })
 export class App {
-  protected readonly title = signal('playground');
+  vadScore = 0;
+  rms = 0;
+  db = 0;
+  i = 0;
+
+  exception(error: Error) {
+    console.error(error);
+  }
+
+  wakeword(ev: WakeyWakeyWordEvent) {
+    this.wavBlobUrl('', WakeyWakeyAudioUtil.createWavBlob(ev.chunk!)!);
+  }
+
+  silence(ev: WakeyWakeySilenceEvent) {
+    this.wavBlobUrl(ev.transcript, WakeyWakeyAudioUtil.createWavBlob([ev.chunk])!);
+  }
+
+  speech(ev: WakeyWakeySpeechEvent) {
+    this.vadScore = ev.vadScore;
+    this.rms = ev.rms;
+    this.db = ev.dbNormalized;
+  }
+
+  log(ev: unknown) {
+    console.log(ev);
+  }
+
+  wavBlobUrl(text: string, audioUrl?: string) {
+    const debugAudioContainer = document.getElementById('debug-audio');
+
+    const clipContainer = document.createElement('div');
+
+    if (audioUrl) {
+      const audioElement = document.createElement('audio');
+      audioElement.controls = true;
+      audioElement.src = audioUrl;
+      clipContainer.appendChild(audioElement);
+    }
+
+    const clipTitle = document.createElement('p');
+    clipTitle.textContent = `${text}`;
+    clipContainer.appendChild(clipTitle);
+
+    debugAudioContainer!.appendChild(clipContainer);
+  }
 }
