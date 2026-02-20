@@ -53,7 +53,7 @@ provideWakeyWakey({
 },
 {
   "glob": "**/*",
-  "input": "node_modules/@prabhjeet-me/wakeywakey/assets",
+  "input": "node_modules/@prabhjeet.me/wakeywakey/assets",
   "output": "."
 }
 ```
