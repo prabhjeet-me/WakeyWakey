@@ -5,7 +5,7 @@ source .devcontainer/scripts/util.sh
 
 log blue "Updating npm..."
 
-npm install -g npm@11.10.0
+npm install -g npm@11.6.2
 
 log blue "Installing node packages..."
 
