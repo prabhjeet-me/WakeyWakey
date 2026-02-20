@@ -9,6 +9,11 @@
       "glob": "**/*.onnx",
       "input": "src/assets/models/",
       "output": "./assets/models"
+    },
+    {
+      "glob": "**/*.mp3",
+      "input": "src/assets/sounds/",
+      "output": "./assets/sounds"
     }
   ]
 }
