@@ -20,6 +20,13 @@ export class ConfigService {
   }
 
   /**
+   * Orb config
+   */
+  get orb() {
+    return this._config.orb;
+  }
+
+  /**
    * Throttle time
    */
   get throttleTime() {

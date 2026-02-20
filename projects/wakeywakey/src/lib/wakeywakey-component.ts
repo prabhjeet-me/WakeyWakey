@@ -1,6 +1,7 @@
 import { Component, EventEmitter, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { throttleTime } from 'rxjs';
 import { SubSink } from 'subsink';
+import { OrbComponent } from './components/orb-component/orb-component';
 import { AudioService } from './services/audio/audio-service';
 import { MicrophoneService } from './services/audio/microphone-service/microphone-service';
 import { SpeakerService } from './services/audio/speaker-service/speaker-service';
@@ -17,8 +18,8 @@ const DEFAULT_THROTTLE_TIME = 1000;
 
 @Component({
   selector: 'wakeywakey',
-  imports: [],
-  template: '',
+  imports: [OrbComponent],
+  template: '<app-orb-component (orbClick)="fireWakeWord()" [intensity]="intensity" />',
   providers: [
     ConfigService,
     MicrophoneService,
@@ -81,9 +82,26 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
    */
   private readonly _subs = new SubSink();
 
+  intensity = 0;
+
+  isDetected = false;
+
   ngOnInit(): void {
     // Execute pipeline
     this._execute();
+  }
+
+  fireWakeWord() {
+    this._event.wakeword.next({
+      inferenceScore: 1,
+      chunk: [],
+      vadScore: 1,
+      hasVoiceActivity: false,
+      sample: new Float32Array(),
+      rms: 0,
+      db: 0,
+      dbNormalized: 0,
+    });
   }
 
   ngOnDestroy(): void {
@@ -126,6 +144,11 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Speech event
     this._subs.sink = this._event.speech.subscribe((e) => {
+      if (this.isDetected) this.intensity = e.dbNormalized * 100;
+      else this.intensity = 0;
+
+      // this.intensity = e.dbNormalized * 100;
+
       this.speech.emit(e);
     });
 
@@ -133,6 +156,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
     this._subs.sink = this._event.wakeword
       .pipe(throttleTime(this._config.throttleTime ?? DEFAULT_THROTTLE_TIME))
       .subscribe((e) => {
+        this.isDetected = true;
         this.wakeword.emit(e);
       });
 
@@ -143,6 +167,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Silence event
     this._subs.sink = this._event.silence.subscribe((e) => {
+      this.isDetected = false;
       this.silence.emit(e);
     });
   }

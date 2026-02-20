@@ -4,7 +4,8 @@
   "peerDependencies": {
     "@angular/common": "^20.3.0",
     "@angular/core": "^20.3.0",
-    "onnxruntime-web": "^1.24.1"
+    "onnxruntime-web": "^1.24.1",
+    "three": "^0.183.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

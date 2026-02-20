@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { OrbConfig } from '../../components/orb-component/orb-component.type';
 import { AudioConfig } from '../audio/audio-service.type';
 import { OnnxConfig } from '../model/model-service.type';
 
@@ -15,6 +16,11 @@ export interface Config {
    * Onnx config
    */
   onnx: OnnxConfig;
+
+  /**
+   * Orb config
+   */
+  orb?: OrbConfig;
 
   /**
    * In sliding window, there is a possibility of detecting wakeword mode than once.

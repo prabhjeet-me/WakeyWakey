@@ -100,7 +100,6 @@ export class AudioService implements OnDestroy {
         ),
       )
       .subscribe(({ speech, score, chunk }) => {
-        this._speaker.playUp();
         this._event.wakeword.next({ ...speech, inferenceScore: score, chunk });
       });
   }
@@ -116,6 +115,8 @@ export class AudioService implements OnDestroy {
       .pipe(
         throttleTime(1000),
         tap(() => {
+          this._speaker.playUp(); // play up
+
           this._event.recording.next(); // recording event
           this._speechRecognition.start();
         }),
