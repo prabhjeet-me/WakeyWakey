@@ -1,0 +1,35 @@
+name: NPM Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout full history
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build:wakeywakey
+
+      - name: Dist
+        run: cd dist/wakeywakey
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

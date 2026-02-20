@@ -5,7 +5,8 @@
     "ng": "ng",
     "test": "ng test",
     "dev": "ng serve playground --host 0.0.0.0",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "build:wakeywakey": "ng build --project wakeywakey"
   },
   "prettier": {
     "printWidth": 100,

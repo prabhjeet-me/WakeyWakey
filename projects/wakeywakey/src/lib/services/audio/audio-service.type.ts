@@ -12,11 +12,11 @@ export interface AudioConfig {
   vadThreshold?: number;
 
   /**
-   * Silence threshold
+   * Silence duration
    *
-   * Default: 0.5
+   * Default: 1000ms
    */
-  silenceThreshold?: number;
+  silenceDuration?: number;
 
   /**
    * Paths

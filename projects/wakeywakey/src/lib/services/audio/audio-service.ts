@@ -108,7 +108,7 @@ export class AudioService implements OnDestroy {
    * New logic: Captures the full command audio after a wakeword
    */
   private _captureCommandAfterWakeword() {
-    const SILENCE_DURATION = this._config.audio.silenceThreshold ?? DEFAULT_SILENCE_DURATION;
+    const SILENCE_DURATION = this._config.audio.silenceDuration ?? DEFAULT_SILENCE_DURATION;
     const VAD_THRESHOLD = this._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD;
 
     this._subs.sink = this._event.wakeword

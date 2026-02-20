@@ -32,6 +32,59 @@ Maintains a rolling "memory" of the last 16 embeddings. A final classification m
 - Data Processing: NumPy-style array manipulation in TypeScript.
 - Models: Specialized Mel-Spectrogram, Embedding, and Wake-word Classifier models.
 
+## Usage
+
+```typescript
+// app.config.ts
+provideWakeyWakey({
+  audio: {
+    gain: 1, // audio gain
+    path: {
+      upSound: './sounds/up.mp3',   // path sound to play when wakeword is detected
+      downSound: './sounds/down.mp3',   // path sound to play when silence is emitted
+    },
+    silenceDuration: 1500 // in ms, wait after silence is detected
+    vadThreshold: 0.5 // 0-1, threshold above which voice activity is considered
+  },
+  orb: {
+    size: 400,  // orb size
+  },
+  onnx: {
+    runtimePath: '/ort/',   // onnx runtime directory
+    wakewordInferenceThreshold: 0.5 // classification score threshold to consider wakeword
+    model: {
+      melspectrogram: './models/melspectrogram.onnx',
+      embedding: './models/embedding_model.onnx',
+      silero_vad: './models/silero_vad_v4.onnx',
+      wakeword: './models/hey_jarvis_v0.1.onnx',
+    },
+  },
+}),
+```
+
+```html
+<!-- your-component.html -->
+<wakeywakey
+  (speech)="speech($event)"
+  (exception)="exception($event)"
+  (wakeword)="wakeword($event)"
+  (ready)="ready()"
+  (recording)="recording()"
+  (silence)="silence($event)"
+></wakeywakey>
+```
+
+### WakeyWakey Component
+
+Below is the list of items that are emitted by this library
+
+- **(speech)**: Fires every 8ms (for 16KHz), contains VAD score, 1280 frames sample, decibel etc
+- **(exception)**: Fires when an exception is thrown
+- **(wakeword)**: Fires when wakeword is detected, contains chunk (spoken samples), inference score etc
+- **(ready)**: Fires when library is ready
+- **(recording)**: Fires when recording is started after wakeword is detected
+- **(silence)**: Fires when silence is detected after recording starts
+
 ## OpenWakeWord
 
 Special thanks to [openWakeWord](https://github.com/dscripka/openWakeWord) for the inspiration of this project. This project works on the architecture similar to openWakeWord.
