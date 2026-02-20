@@ -1,5 +1,3 @@
 {
-  "packages": {
-    "projects/wakeywakey": {}
-  }
+  "projects/wakeywakey": "0.0.0"
 }
