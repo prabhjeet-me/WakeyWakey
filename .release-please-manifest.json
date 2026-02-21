@@ -1,4 +1,4 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/manifest.json",
-  "projects/wakeywakey": "0.0.0"
+  "@prabhjeet.me/wakeywakey": "0.0.0"
 }
