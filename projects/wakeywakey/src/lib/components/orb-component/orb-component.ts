@@ -1,18 +1,17 @@
 import {
   Component,
   ElementRef,
-  EventEmitter,
   HostListener,
   inject,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import * as THREE from 'three';
+import { AudioService } from '../../services/audio/audio-service';
 import { ConfigService } from '../../services/config/config-service';
 import { PlatformService } from '../../services/platform/platform-service';
 
@@ -26,8 +25,8 @@ import { PlatformService } from '../../services/platform/platform-service';
     class="orb-viewport"
     [style.height]="orbSize"
     [style.width]="orbSize"
-    (click)="orbClick.emit()"
-    (keypress)="orbClick.emit()"
+    (click)="toggleRecording()"
+    (keypress)="toggleRecording()"
   ></div>`,
   styles: [
     `
@@ -46,13 +45,9 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
    */
   @Input() intensity = 0;
 
-  /**
-   * On orb click
-   */
-  @Output() orbClick = new EventEmitter();
-
   private readonly _config = inject(ConfigService);
   private readonly _platform = inject(PlatformService);
+  private readonly _audio = inject(AudioService);
 
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
@@ -67,8 +62,19 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
   private clock = new THREE.Timer();
   private elapsedTime = 0;
 
+  get isRecording() {
+    return this._audio.isRecording;
+  }
+
   get orbSize() {
     return this._config.orb?.size ?? 400;
+  }
+
+  /**
+   * Toggle recording
+   */
+  toggleRecording() {
+    this._audio.toggleRecording();
   }
 
   ngOnInit() {
@@ -98,7 +104,7 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
   @HostListener('window:keydown.Space', ['$event'])
   handleSpacebarPress(event: Event): void {
     event.preventDefault(); // Prevents the default space bar action (e.g., scrolling)
-    this.orbClick.emit();
+    this.toggleRecording();
   }
 
   /**
