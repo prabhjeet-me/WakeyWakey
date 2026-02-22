@@ -6,6 +6,7 @@ import {
   EMPTY,
   filter,
   map,
+  merge,
   scan,
   share,
   switchMap,
@@ -45,6 +46,13 @@ export class AudioService implements OnDestroy {
 
   private readonly _subs = new SubSink();
 
+  private _forceEndRecording = false;
+  private _isRecording = false;
+
+  get isRecording() {
+    return this._isRecording;
+  }
+
   ngOnDestroy(): void {
     this._subs.unsubscribe();
   }
@@ -79,6 +87,37 @@ export class AudioService implements OnDestroy {
 
     this._listenForWakeword();
     this._captureCommandAfterWakeword();
+  }
+
+  /**
+   * Force start recording
+   */
+  forceStartRecording() {
+    this._event.wakeword.next({
+      inferenceScore: 0,
+      chunk: [],
+      vadScore: 0,
+      hasVoiceActivity: false,
+      sample: new Float32Array(),
+      rms: 0,
+      db: 0,
+      dbNormalized: 0,
+    });
+  }
+
+  /**
+   * Force end recording
+   */
+  forceEndRecording() {
+    this._forceEndRecording = true;
+  }
+
+  /**
+   * Toggle recording
+   */
+  toggleRecording() {
+    if (this._isRecording) this.forceEndRecording();
+    else this.forceStartRecording();
   }
 
   /**
@@ -117,6 +156,7 @@ export class AudioService implements OnDestroy {
         tap(() => {
           this._speaker.playUp(); // play up
 
+          this._isRecording = true;
           this._event.recording.next(); // recording event
           this._speechRecognition.start();
         }),
@@ -134,7 +174,8 @@ export class AudioService implements OnDestroy {
             distinctUntilChanged(), // only emit when silence state changes
           );
 
-          return silence$.pipe(
+          // 1. Normal silence timeout logic
+          const normalSilenceTimeout$ = silence$.pipe(
             delay(500),
             switchMap((isSilent) => {
               if (!isSilent) {
@@ -148,6 +189,14 @@ export class AudioService implements OnDestroy {
                 ),
               );
             }),
+          );
+
+          // 2. Force complete logic checking the variable
+          // Evaluates the variable on every speech chunk arrival
+          const forceComplete$ = speech$.pipe(filter(() => this._forceEndRecording));
+
+          // 3. Complete whenever the timer fires OR the flag is set to true
+          return merge(normalSilenceTimeout$, forceComplete$).pipe(
             take(1),
             map(() => this._flatten(commandChunks)),
           );
@@ -155,6 +204,9 @@ export class AudioService implements OnDestroy {
       )
       .subscribe({
         next: (chunk) => {
+          this._forceEndRecording = false; // reset flag after recording ends
+          this._isRecording = false;
+
           this._speaker.playDown();
           this._speechRecognition.stop(); // stop recognition
 
