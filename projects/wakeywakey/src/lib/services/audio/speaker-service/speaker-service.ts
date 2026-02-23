@@ -1,14 +1,19 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, OnDestroy } from '@angular/core';
+import { SubSink } from 'subsink';
 import { ConfigService } from '../../config/config-service';
+import { EventService } from '../../event/event-service';
 import { PlatformService } from '../../platform/platform-service';
 
 @Injectable()
-export class SpeakerService {
+export class SpeakerService implements OnDestroy {
   /**
    * Dependencies
    */
   private readonly _config = inject(ConfigService);
   private readonly _platform = inject(PlatformService);
+  private readonly _event = inject(EventService);
+
+  private readonly _subs = new SubSink();
 
   private _upSound!: HTMLAudioElement;
   private _downSound!: HTMLAudioElement;
@@ -20,7 +25,13 @@ export class SpeakerService {
       this._downSound = new Audio(this._config.audio.path?.downSound);
 
       this._upSound.preload = this._downSound.preload = 'auto';
+
+      this._loadSubscriptions();
     }
+  }
+
+  ngOnDestroy(): void {
+    this._subs.unsubscribe();
   }
 
   /**
@@ -35,5 +46,20 @@ export class SpeakerService {
    */
   playDown() {
     this._downSound.play();
+  }
+
+  /**
+   * Load subscriptions
+   */
+  private _loadSubscriptions() {
+    this._subs.sink = this._event.wakeword.subscribe(() => {
+      this.playUp();
+    });
+
+    // If default, on silence, play down
+    if (this._config.mode == 'DEFAULT')
+      this._subs.sink = this._event.silence.subscribe(() => {
+        this.playDown();
+      });
   }
 }
