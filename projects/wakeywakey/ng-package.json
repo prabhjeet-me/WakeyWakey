@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/wakeywakey",
+  "lib": {
+    "entryFile": "src/public-api.ts"
+  },
+  "assets": [
+    {
+      "glob": "**/*.onnx",
+      "input": "src/assets/models/",
+      "output": "./assets/models"
+    },
+    {
+      "glob": "**/*.mp3",
+      "input": "src/assets/sounds/",
+      "output": "./assets/sounds"
+    }
+  ]
+}

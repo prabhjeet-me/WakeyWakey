@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="root">
+    <wakeywakey
+      (speech)="speech($event)"
+      (exception)="exception($event)"
+      (wakeword)="wakeword($event)"
+      (ready)="log('ready')"
+      (recording)="log('recording')"
+      (silence)="silence($event)"
+    ></wakeywakey>
+  </div>
+  <div class="root">
+    <h1>WakeyWakey</h1>
+    <h2>Wake Word Detector</h2>
+
+    <div class="content">
+      <div class="title">VAD Score: {{ vadScore }}</div>
+      <div class="level">
+        <div
+          class="indicator"
+          [style.width]="vadScore * 100 + '%'"
+          [style.backgroundColor]="vadScore > 0.5 ? 'green' : ''"
+        ></div>
+      </div>
+
+      <div class="title">RMS: {{ rms }}</div>
+      <div class="level">
+        <div class="indicator" [style.width]="rms * 100 + '%'"></div>
+      </div>
+
+      <div class="title">DB: {{ db }}</div>
+      <div class="level">
+        <div class="indicator" [style.width]="db * 100 + '%'"></div>
+      </div>
+    </div>
+
+    <div id="debug-audio">
+      <h3>WAVs</h3>
+    </div>
+  </div>
+</div>
+
+<!-- <wakeywakey
+  (speech)="speech($event)"
+  (exception)="exception($event)"
+  (wakeword)="wakeword($event)"
+  (ready)="log('ready')"
+  (recording)="log('recording')"
+  (silence)="silence($event)"
+></wakeywakey> -->

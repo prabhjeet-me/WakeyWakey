@@ -1,0 +1,48 @@
+{
+  "name": "WakeyWakey",
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node": {}
+  },
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": ".devcontainer/scripts/postCreateCommand.sh",
+
+  // Configure tool-specific properties.
+  // VS Code customization
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "DavidAnson.vscode-markdownlint",
+        "pkief.material-icon-theme",
+        "github.vscode-github-actions",
+        "biernew.markdown-mermaid",
+        "ms-azuretools.vscode-containers",
+        "lijian-onnx-viewer.onnxviewer",
+        "angular.ng-template",
+        "hediet.vscode-drawio"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.editorAssociations": {
+          "*.md": "vscode.markdown.preview.editor"
+        },
+        "explorer.compactFolders": false,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "always"
+        },
+        "hediet.vscode-drawio.appearance": "automatic"
+      }
+    }
+  }
+}

@@ -1,0 +1,196 @@
+import { inject, Injectable, OnDestroy } from '@angular/core';
+import { loadRnnoise, RnnoiseWorkletNode } from '@sapphi-red/web-noise-suppressor';
+import { Subject } from 'rxjs';
+import { ConfigService } from '../../config/config-service';
+import { EventService } from '../../event/event-service';
+import {
+  MICROPHONE_PROCESSOR,
+  MICROPHONE_PROCESSOR_NAME,
+  SAMPLE_RATE,
+} from './microphone-service.constant';
+import { MicrophoneProcessorData } from './microphone-service.type';
+
+@Injectable()
+export class MicrophoneService implements OnDestroy {
+  /**
+   * Dependencies
+   */
+  private readonly _event = inject(EventService);
+  private readonly _config = inject(ConfigService);
+
+  /**
+   * Audio data subject
+   */
+  private readonly _data = new Subject<MicrophoneProcessorData>();
+
+  /**
+   * List of available microphones
+   */
+  private _microphones: MediaDeviceInfo[] = [];
+
+  /**
+   * Media steam
+   */
+  private _stream!: MediaStream;
+
+  /**
+   * Audio context
+   */
+  private _audioContext?: AudioContext;
+
+  constructor() {
+    // Init mic
+    this._init();
+  }
+
+  /**
+   * List of available microphones
+   */
+  get microphones() {
+    return this._microphones;
+  }
+
+  /**
+   * Microphone data
+   */
+  get data() {
+    return this._data;
+  }
+
+  /**
+   * Set input source
+   */
+  set source(deviceId: string) {
+    this._init(deviceId);
+  }
+
+  ngOnDestroy(): void {
+    // close audio context
+    this._audioContext?.close();
+  }
+
+  /**
+   * Initialize
+   *
+   * @param deviceId Input device id (from microphone list)
+   */
+  private async _init(deviceId?: string) {
+    try {
+      // cleanup
+      this.ngOnDestroy();
+
+      // request permission
+      this._stream = await navigator.mediaDevices.getUserMedia({
+        audio: !deviceId
+          ? {
+              noiseSuppression: false,
+              echoCancellation: false,
+            }
+          : { deviceId: { exact: deviceId } },
+      });
+
+      this._event.log.next(
+        `${MicrophoneService.name}: Microphone permission granted (deviceid: '${deviceId ?? 'default'}')!`,
+      );
+
+      // save list of microphones
+      this._microphones = await this._microphoneList();
+
+      // monitor audio
+      this._monitor();
+
+      return true;
+    } catch (error) {
+      this._event.exception.next(error as Error);
+    }
+
+    return false;
+  }
+
+  /**
+   * Monitor audio
+   *
+   * @returns chunk subject
+   */
+  private async _monitor() {
+    const worklet = await this._workletNode();
+
+    // on message
+    worklet.port.onmessage = async (event) => {
+      const data = (event.data as MicrophoneProcessorData) ?? null;
+      if (!data) return;
+
+      // emit chunk
+      this._data.next(data);
+    };
+
+    return this._data;
+  }
+
+  /**
+   * Save microphones
+   */
+  private async _microphoneList() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((device) => device.kind === 'audioinput');
+  }
+
+  /**
+   * Prepare worklet node
+   */
+  private async _workletNode() {
+    // Create audio context
+    this._audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+
+    if (this._config.audio.noiseSuppression) {
+      await this._audioContext.audioWorklet.addModule(
+        this._config.audio.noiseSuppression.worklet ??
+          `${this._config.basePath}/worklets/workletProcessor.js`,
+      );
+    }
+
+    // Load custom worklet
+    const blob = new Blob([MICROPHONE_PROCESSOR], { type: 'application/javascript' });
+    const workletURL = URL.createObjectURL(blob);
+    await this._audioContext.audioWorklet.addModule(workletURL);
+    URL.revokeObjectURL(workletURL);
+
+    // Create Nodes
+    const source = this._audioContext.createMediaStreamSource(this._stream);
+
+    // Gain Node
+    const gainNode = this._audioContext.createGain();
+    gainNode.gain.value = this._config.audio.gain;
+
+    if (this._config.audio.noiseSuppression) {
+      // Load RNNoise dependencies
+      const rnnoiseWasmBinary = await loadRnnoise({
+        url:
+          this._config.audio.noiseSuppression.rnnoise ??
+          `${this._config.basePath}/wasm/rnnoise.wasm`,
+        simdUrl:
+          this._config.audio.noiseSuppression.rnnoise_simd ??
+          `${this._config.basePath}/wasm/rnnoise_simd.wasm`,
+      });
+
+      // RNNoise Node
+      const rnnoiseNode = new RnnoiseWorkletNode(this._audioContext, {
+        wasmBinary: rnnoiseWasmBinary,
+        maxChannels: 1, // Standard for mono microphone input
+      });
+
+      source.connect(rnnoiseNode);
+      rnnoiseNode.connect(gainNode);
+    } else {
+      source.connect(gainNode);
+    }
+
+    // Custom Worklet Node
+    const workletNode = new AudioWorkletNode(this._audioContext, MICROPHONE_PROCESSOR_NAME);
+
+    // Connect the Graph: Source -> RNNoise (if noise suppression) -> Gain -> Custom Worklet
+    gainNode.connect(workletNode);
+
+    return workletNode;
+  }
+}
