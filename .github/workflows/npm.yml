@@ -3,7 +3,7 @@ name: NPM Publish
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '@prabhjeet.me/wakeywakey-v*.*.*'
 
 jobs:
   npm:
