@@ -19,10 +19,16 @@ export class SpeakerService implements OnDestroy {
   private _downSound!: HTMLAudioElement;
 
   constructor() {
+    if (this._config.audio.sound?.enable === false) return;
+
     // Audio is only available in browser context
     if (this._platform.isBrowser) {
-      this._upSound = new Audio(this._config.audio.path?.upSound);
-      this._downSound = new Audio(this._config.audio.path?.downSound);
+      this._upSound = new Audio(
+        this._config.audio.sound?.up ?? `${this._config.basePath}/sounds/up.mp3`,
+      );
+      this._downSound = new Audio(
+        this._config.audio.sound?.down ?? `${this._config.basePath}/sounds/down.mp3`,
+      );
 
       this._upSound.preload = this._downSound.preload = 'auto';
 
@@ -38,6 +44,8 @@ export class SpeakerService implements OnDestroy {
    * Play on sound
    */
   playUp() {
+    if (this._config.audio.sound?.enable === false) return;
+
     this._upSound.play();
   }
 
@@ -45,6 +53,8 @@ export class SpeakerService implements OnDestroy {
    * Play off sound
    */
   playDown() {
+    if (this._config.audio.sound?.enable === false) return;
+
     this._downSound.play();
   }
 

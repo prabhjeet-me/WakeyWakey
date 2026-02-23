@@ -1,23 +1,15 @@
-import { inject, Injectable } from '@angular/core';
-import { env, InferenceSession } from 'onnxruntime-web';
-import { ConfigService } from '../config/config-service';
-import { EventService } from '../event/event-service';
+import { Injectable } from '@angular/core';
+import { InferenceSession } from 'onnxruntime-web';
 import { InferenceModels } from './model-service.type';
 
 @Injectable()
 export class ModelService {
   /**
-   * Dependencies
-   */
-  private readonly _config = inject(ConfigService);
-  private readonly _event = inject(EventService);
-
-  /**
    * Inference session
    */
   private _inferenceSession: Record<InferenceModels, InferenceSession | undefined> = {
     melspectrogram: undefined,
-    embedding: undefined,
+    embedding_model: undefined,
     silero_vad: undefined,
     wakeword: undefined,
   };
@@ -33,7 +25,7 @@ export class ModelService {
    * Get embedding inference session
    */
   get embedding() {
-    return this._inferenceSession['embedding']!;
+    return this._inferenceSession['embedding_model']!;
   }
 
   /**
@@ -51,35 +43,9 @@ export class ModelService {
   }
 
   /**
-   * Initialize
-   *
-   * @returns true if inference is loaded
+   * Set session instance
    */
-  async init() {
-    // Set wasm path
-    env.wasm.wasmPaths = this._config.onnx.runtimePath ?? '/ort/';
-
-    try {
-      // Create sessions
-      const sessions = await Promise.all(
-        Object.values(this._config.onnx.model).map((path) =>
-          InferenceSession.create(path, { executionProviders: ['wasm'] }),
-        ),
-      );
-
-      // Save sessions
-      Object.keys(this._config.onnx.model).forEach((name, index) => {
-        this._inferenceSession[name as InferenceModels] = sessions[index];
-      });
-    } catch (error) {
-      this._event.exception.next(error as Error);
-      this._event.exception.next(
-        new Error(`${ModelService.name}: Unable to create inference session. Stopping.`),
-      );
-
-      return false;
-    }
-
-    return true;
+  set session(sessions: Record<InferenceModels, InferenceSession | undefined>) {
+    this._inferenceSession = sessions;
   }
 }

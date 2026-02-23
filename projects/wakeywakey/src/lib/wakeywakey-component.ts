@@ -3,15 +3,10 @@ import { throttleTime } from 'rxjs';
 import { SubSink } from 'subsink';
 import { OrbComponent } from './components/orb-component/orb-component';
 import { AudioService } from './services/audio/audio-service';
-import { MicrophoneService } from './services/audio/microphone-service/microphone-service';
-import { SpeakerService } from './services/audio/speaker-service/speaker-service';
-import { SpeechRecognitionService } from './services/audio/speech-recognition/speech-recognition-service';
-import { VadService } from './services/audio/vad-service/vad-service';
 import { ConfigService } from './services/config/config-service';
 import { EventService } from './services/event/event-service';
 import { SilenceEvent, SpeechEvent, WakeWordEvent } from './services/event/event-service.type';
 import { ModelService } from './services/model/model-service';
-import { PipelineService } from './services/pipeline/pipeline-service';
 import { PlatformService } from './services/platform/platform-service';
 
 const DEFAULT_THROTTLE_TIME = 1000;
@@ -20,18 +15,7 @@ const DEFAULT_THROTTLE_TIME = 1000;
   selector: 'wakeywakey',
   imports: [OrbComponent],
   template: '<app-orb-component (orbClick)="fireWakeWord()" />',
-  providers: [
-    ConfigService,
-    MicrophoneService,
-    SpeakerService,
-    VadService,
-    AudioService,
-    ModelService,
-    PlatformService,
-    EventService,
-    PipelineService,
-    SpeechRecognitionService,
-  ],
+  providers: [],
 })
 export class WakeyWakeyComponent implements OnInit, OnDestroy {
   /**
@@ -116,12 +100,6 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Listen events
     this._listenEvents();
-
-    // Init inference
-    const inference = await this._model.init();
-
-    // Stop execution is inference session is not created
-    if (!inference) return;
 
     // Init audio
     await this._audio.init();

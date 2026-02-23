@@ -4,18 +4,24 @@ export interface OnnxConfig {
   model: {
     /**
      * Mel Spectrogram model (.onnx)
+     *
+     * Default: [basePath]/models/melspectrogram.onnx
      */
-    melspectrogram: string;
+    melspectrogram?: string;
 
     /**
      * Embedding model (.onnx)
+     *
+     * Default: [basePath]/models/embedding_model.onnx
      */
-    embedding: string;
+    embedding_model?: string;
 
     /**
      * Silero VAD (.onnx)
+     *
+     * Default: [basePath]/models/silero_vad_v4.onnx
      */
-    silero_vad: string;
+    silero_vad?: string;
 
     /**
      * Wake word model (.onnx)
@@ -26,7 +32,7 @@ export interface OnnxConfig {
   /**
    * Path that contains onnx wasm runtime files
    *
-   * Default: /ort/
+   * Default: [basePath]/wasm
    */
   runtimePath?: string;
 

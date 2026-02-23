@@ -39,4 +39,11 @@ export class ConfigService {
   get mode() {
     return this._config.mode;
   }
+
+  /**
+   * Base path of assets
+   */
+  get basePath() {
+    return this._config.basePath || '/wakeywakey';
+  }
 }

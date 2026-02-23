@@ -18,22 +18,16 @@ export const appConfig: ApplicationConfig = {
     provideWakeyWakey({
       audio: {
         gain: 1,
-        path: {
-          upSound: './sounds/up.mp3',
-          downSound: './sounds/down.mp3',
+        noiseSuppression: {
+          enable: true,
         },
-        noiseSuppression: true,
       },
       orb: {
         size: 400,
       },
       onnx: {
-        runtimePath: '/ort/',
         model: {
-          melspectrogram: './models/melspectrogram.onnx',
-          embedding: './models/embedding_model.onnx',
-          silero_vad: './models/silero_vad_v4.onnx',
-          wakeword: './models/hey_jarvis_v0.1.onnx',
+          wakeword: '/wakeywakey/models/hey_jarvis_v0.1.onnx',
         },
       },
       mode: 'VOICE_CHAT',

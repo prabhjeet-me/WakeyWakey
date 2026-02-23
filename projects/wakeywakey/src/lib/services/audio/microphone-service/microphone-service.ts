@@ -143,7 +143,10 @@ export class MicrophoneService implements OnDestroy {
     this._audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
 
     if (this._config.audio.noiseSuppression) {
-      await this._audioContext.audioWorklet.addModule('/rnnoise/workletProcessor.js');
+      await this._audioContext.audioWorklet.addModule(
+        this._config.audio.noiseSuppression.worklet ??
+          `${this._config.basePath}/worklets/workletProcessor.js`,
+      );
     }
 
     // Load custom worklet
@@ -162,8 +165,12 @@ export class MicrophoneService implements OnDestroy {
     if (this._config.audio.noiseSuppression) {
       // Load RNNoise dependencies
       const rnnoiseWasmBinary = await loadRnnoise({
-        url: '/rnnoise/rnnoise.wasm',
-        simdUrl: '/rnnoise/rnnoise_simd.wasm',
+        url:
+          this._config.audio.noiseSuppression.rnnoise ??
+          `${this._config.basePath}/wasm/rnnoise.wasm`,
+        simdUrl:
+          this._config.audio.noiseSuppression.rnnoise_simd ??
+          `${this._config.basePath}/wasm/rnnoise_simd.wasm`,
       });
 
       // RNNoise Node

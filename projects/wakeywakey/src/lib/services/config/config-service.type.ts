@@ -35,6 +35,13 @@ export interface Config {
    * CHAT: [WAKEWORD] -> Start Recording -> Silence -> [Speaking] ->  Start Recording -> Silence .....
    */
   mode?: 'DEFAULT' | 'VOICE_CHAT';
+
+  /**
+   * Base asset path. This path will be used to access required resources
+   *
+   * Default: /wakeywakey
+   */
+  basePath?: string;
 }
 
 /**

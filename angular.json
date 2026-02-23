@@ -59,14 +59,29 @@
                 "input": "projects/playground/public"
               },
               {
-                "glob": "**/*",
+                "glob": "**/*simd-threaded*.(wasm|mjs)",
                 "input": "node_modules/onnxruntime-web/dist/",
-                "output": "ort"
+                "output": "wakeywakey/wasm"
               },
               {
                 "glob": "**/*",
-                "input": "projects/wakeywakey/src/assets",
-                "output": "."
+                "input": "projects/wakeywakey/src/assets/models",
+                "output": "wakeywakey/models"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/wakeywakey/src/assets/sounds",
+                "output": "wakeywakey/sounds"
+              },
+              {
+                "glob": "rnnoise*.wasm",
+                "input": "node_modules/@sapphi-red/web-noise-suppressor/dist",
+                "output": "wakeywakey/wasm"
+              },
+              {
+                "glob": "*.js",
+                "input": "node_modules/@sapphi-red/web-noise-suppressor/dist/rnnoise",
+                "output": "wakeywakey/worklets"
               }
             ],
             "styles": ["projects/playground/src/styles.scss"],
