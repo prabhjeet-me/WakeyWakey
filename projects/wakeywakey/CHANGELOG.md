@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.0.0...@prabhjeet.me/wakeywakey-v1.0.1) (2026-02-23)
+
+
+### Bug Fixes
+
+* updated peerDependencies ([a3317bf](https://github.com/prabhjeet-me/WakeyWakey/commit/a3317bf33fc0bfe3aa45fc1338bc9a9a317f3620))
+* updated peerDependencies ([4c31134](https://github.com/prabhjeet-me/WakeyWakey/commit/4c31134bc0536ffc2d94cc55cdde1fbf0eab5d6d))
+
 ## 1.0.0 (2026-02-23)
 
 
