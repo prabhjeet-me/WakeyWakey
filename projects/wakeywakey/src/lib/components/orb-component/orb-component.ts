@@ -248,12 +248,13 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
       this._isActive = true;
     });
 
-    // For default mode
-    if (this._config.mode === 'DEFAULT')
-      this._subs.sink = this._event.silence.subscribe(() => {
+    // Silence
+    this._subs.sink = this._event.silence.subscribe((ev) => {
+      if (!ev.interimResponse) {
         // on silence, set color to red
         this.changeColor(new THREE.Color('red'), new THREE.Color('red'));
         this._isActive = false;
-      });
+      }
+    });
   }
 }

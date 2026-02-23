@@ -1,8 +1,8 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, OnDestroy } from '@angular/core';
 import { EventService } from '../../event/event-service';
 
 @Injectable()
-export class SpeechRecognitionService {
+export class SpeechRecognitionService implements OnDestroy {
   /**
    * Dependencies
    */
@@ -24,44 +24,15 @@ export class SpeechRecognitionService {
   private _transcript = '';
 
   /**
-   * Flag for recording
-   */
-  private _isRecognizing = false;
-
-  /**
    * Get transcript
    */
   get transcript() {
     return this._transcript;
   }
 
-  /**
-   * Get if recording
-   */
-  get isRecognizing() {
-    return this._isRecognizing;
-  }
-
-  /**
-   * Start recognition
-   */
-  start() {
-    if (this._isRecognizing) return;
-
-    this._recognition.start();
-    this._isRecognizing = true;
-  }
-
-  /**
-   * Stop recognition
-   */
-  stop() {
-    if (!this._isRecognizing) return;
-
+  ngOnDestroy(): void {
     this.reset(); // clear transcript
-
     this._recognition.stop();
-    this._isRecognizing = false;
   }
 
   /**
@@ -89,9 +60,11 @@ export class SpeechRecognitionService {
     // 3. Handle Results
     this._recognition.onresult = (event) => {
       this._transcript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+
+      for (let i = event.resultIndex; i < event.results.length; i++)
         this._transcript += event.results[i][0].transcript;
-      }
     };
+
+    this._recognition.start(); // start
   }
 }

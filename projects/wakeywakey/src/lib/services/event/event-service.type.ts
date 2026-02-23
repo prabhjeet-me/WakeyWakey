@@ -43,4 +43,10 @@ export interface SilenceEvent {
    * Transcript of speech
    */
   transcript: string;
+
+  /**
+   * For DEFAULT mode: always false
+   * For VOICE_CHAT mode: true if constant chat is going on, false if stopped
+   */
+  interimResponse: boolean;
 }

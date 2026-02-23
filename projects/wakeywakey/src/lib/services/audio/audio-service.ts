@@ -5,6 +5,7 @@ import {
   distinctUntilChanged,
   EMPTY,
   filter,
+  ignoreElements,
   map,
   merge,
   scan,
@@ -36,18 +37,27 @@ export class AudioService implements OnDestroy {
   /**
    * Dependencies
    */
+  private readonly __speaker = inject(SpeakerService); // Initialize
   private readonly _config = inject(ConfigService);
   private readonly _event = inject(EventService);
   private readonly _mic = inject(MicrophoneService);
   private readonly _vad = inject(VadService);
   private readonly _pipeline = inject(PipelineService);
-  private readonly _speaker = inject(SpeakerService);
   private readonly _speechRecognition = inject(SpeechRecognitionService);
 
   private readonly _subs = new SubSink();
 
-  private _forceEndRecording = false;
+  private _endCurrentRecording = false;
+
+  /**
+   * Recording state
+   */
   private _isRecording = false;
+
+  /**
+   * Is process is initialized (detected wakeword)
+   */
+  private _isInitialized = false;
 
   get isRecording() {
     return this._isRecording;
@@ -90,9 +100,13 @@ export class AudioService implements OnDestroy {
   }
 
   /**
-   * Force start recording
+   * Force start recording (without wakeword)
    */
   forceStartRecording() {
+    this._isInitialized = true;
+    this._endCurrentRecording = false;
+
+    // this._speechRecognition.reset(); // reset transcript
     this._event.wakeword.next({
       inferenceScore: 0,
       chunk: [],
@@ -109,15 +123,23 @@ export class AudioService implements OnDestroy {
    * Force end recording
    */
   forceEndRecording() {
-    this._forceEndRecording = true;
+    this._endCurrentRecording = true;
+
+    this._event.silence.next({
+      chunk: new Float32Array(),
+      transcript: '',
+      interimResponse: false, // final response
+    });
   }
 
   /**
    * Toggle recording
    */
   toggleRecording() {
-    if (this._isRecording) this.forceEndRecording();
-    else this.forceStartRecording();
+    if (this._isInitialized) {
+      this._isInitialized = false;
+      this.forceEndRecording();
+    } else this.forceStartRecording();
   }
 
   /**
@@ -150,19 +172,62 @@ export class AudioService implements OnDestroy {
     const SILENCE_DURATION = this._config.audio.silenceDuration ?? DEFAULT_SILENCE_DURATION;
     const VAD_THRESHOLD = this._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD;
 
-    this._subs.sink = this._event.wakeword
-      .pipe(
-        throttleTime(1000),
-        tap(() => {
-          this._speaker.playUp(); // play up
+    // --- TRIGGER 1: Wakeword ---
+    const wakewordTrigger$ = this._event.wakeword.pipe(
+      filter(() => !this._isRecording), // Ignore wakeword if already recording
+      map(() => [] as Float32Array[]),
+    );
 
+    // --- TRIGGER 2: Continuous VAD > THRESHOLD for 1 second ---
+    const continuousVadTrigger$ = this._event.speech.pipe(
+      map((s) => s.vadScore > VAD_THRESHOLD),
+      filter(() => !this._isRecording && this._isInitialized), // Ignore and prevent background buffering if already recording
+      distinctUntilChanged(),
+      switchMap((isVoiceActive) => {
+        if (!isVoiceActive) return EMPTY; // Cancel if voice stops
+
+        this._speechRecognition.reset();
+
+        const bufferedChunks: Float32Array[] = [];
+
+        // 1. Accumulate audio chunks silently
+        const buffer$ = this._event.speech.pipe(
+          tap((s) => bufferedChunks.push(s.sample)),
+          ignoreElements(), // Prevents this stream from emitting down the pipe
+        );
+
+        // 2. Timer that emits the accumulated chunks after 1 second
+        const timer$ = timer(300).pipe(map(() => bufferedChunks));
+
+        // Merge both. If the timer fires, take(1) stops the buffer$ stream.
+        // If isVoiceActive turns false before 1s, switchMap cancels both.
+        return merge(buffer$, timer$).pipe(take(1));
+      }),
+    );
+
+    // --- COMBINE TRIGGERS ---
+    const startRecordingTrigger$ = merge(
+      wakewordTrigger$.pipe(
+        tap(() => {
+          if (!this._isInitialized) this._isInitialized = true; // initialized
+        }),
+      ),
+      continuousVadTrigger$,
+    ).pipe(
+      throttleTime(1000), // Prevent double-firing if wakeword and voice overlap
+    );
+
+    // --- MAIN RECORDING PIPELINE ---
+    this._subs.sink = startRecordingTrigger$
+      .pipe(
+        tap(() => {
           this._isRecording = true;
           this._event.recording.next(); // recording event
-          this._speechRecognition.start();
         }),
 
-        switchMap(() => {
-          const commandChunks: Float32Array[] = [];
+        switchMap((bufferedChunks) => {
+          // Initialize our command chunks with anything captured during the 1s VAD wait
+          const commandChunks: Float32Array[] = [...bufferedChunks];
 
           const speech$ = this._event.speech.pipe(
             tap((speech) => commandChunks.push(speech.sample)),
@@ -192,8 +257,7 @@ export class AudioService implements OnDestroy {
           );
 
           // 2. Force complete logic checking the variable
-          // Evaluates the variable on every speech chunk arrival
-          const forceComplete$ = speech$.pipe(filter(() => this._forceEndRecording));
+          const forceComplete$ = speech$.pipe(filter(() => this._endCurrentRecording));
 
           // 3. Complete whenever the timer fires OR the flag is set to true
           return merge(normalSilenceTimeout$, forceComplete$).pipe(
@@ -204,16 +268,21 @@ export class AudioService implements OnDestroy {
       )
       .subscribe({
         next: (chunk) => {
-          this._forceEndRecording = false; // reset flag after recording ends
-          this._isRecording = false;
-
-          this._speaker.playDown();
-          this._speechRecognition.stop(); // stop recognition
+          const interimResponse = this._config.mode === 'DEFAULT' ? false : true;
 
           this._event.silence.next({
             chunk,
             transcript: this._speechRecognition.transcript,
-          });
+            interimResponse,
+          }); // emit silence event
+
+          // Default case
+          if (this._config.mode === 'DEFAULT') {
+            this._isInitialized = false;
+            this._endCurrentRecording = false; // reset flag after recording ends
+          }
+
+          this._isRecording = false;
         },
         error: (err) => {
           this._event.exception.next(err);
@@ -238,8 +307,7 @@ export class AudioService implements OnDestroy {
   }
 
   /**
-   *
-   *
+   * Wakeword stream
    * @returns
    */
   private _getWakeWordStream() {

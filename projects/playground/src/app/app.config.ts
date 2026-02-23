@@ -36,6 +36,7 @@ export const appConfig: ApplicationConfig = {
           wakeword: './models/hey_jarvis_v0.1.onnx',
         },
       },
+      mode: 'VOICE_CHAT',
     }),
   ],
 };

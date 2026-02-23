@@ -29,6 +29,7 @@ export class App {
   }
 
   silence(ev: WakeyWakeySilenceEvent) {
+    console.log('silence:', ev.transcript);
     this.wavBlobUrl(ev.transcript, WakeyWakeyAudioUtil.createWavBlob([ev.chunk])!);
   }
 

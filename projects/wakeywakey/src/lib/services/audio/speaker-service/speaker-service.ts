@@ -57,9 +57,8 @@ export class SpeakerService implements OnDestroy {
     });
 
     // If default, on silence, play down
-    if (this._config.mode == 'DEFAULT')
-      this._subs.sink = this._event.silence.subscribe(() => {
-        this.playDown();
-      });
+    this._subs.sink = this._event.silence.subscribe((ev) => {
+      if (!ev.interimResponse) this.playDown();
+    });
   }
 }
