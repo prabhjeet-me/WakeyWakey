@@ -19,7 +19,7 @@ const DEFAULT_THROTTLE_TIME = 1000;
 @Component({
   selector: 'wakeywakey',
   imports: [OrbComponent],
-  template: '<app-orb-component (orbClick)="fireWakeWord()" [intensity]="intensity" />',
+  template: '<app-orb-component (orbClick)="fireWakeWord()" />',
   providers: [
     ConfigService,
     MicrophoneService,
@@ -82,15 +82,14 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
    */
   private readonly _subs = new SubSink();
 
-  intensity = 0;
-
-  isDetected = false;
-
   ngOnInit(): void {
     // Execute pipeline
     this._execute();
   }
 
+  /**
+   * Fire face wakeword event
+   */
   fireWakeWord() {
     this._event.wakeword.next({
       inferenceScore: 1,
@@ -144,11 +143,6 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Speech event
     this._subs.sink = this._event.speech.subscribe((e) => {
-      if (this.isDetected) this.intensity = e.dbNormalized * 100;
-      else this.intensity = 0;
-
-      // this.intensity = e.dbNormalized * 100;
-
       this.speech.emit(e);
     });
 
@@ -156,7 +150,6 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
     this._subs.sink = this._event.wakeword
       .pipe(throttleTime(this._config.throttleTime ?? DEFAULT_THROTTLE_TIME))
       .subscribe((e) => {
-        this.isDetected = true;
         this.wakeword.emit(e);
       });
 
@@ -167,7 +160,6 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Silence event
     this._subs.sink = this._event.silence.subscribe((e) => {
-      this.isDetected = false;
       this.silence.emit(e);
     });
   }
