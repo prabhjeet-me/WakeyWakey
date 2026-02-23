@@ -5,6 +5,10 @@ on:
     tags:
       - '@prabhjeet.me/wakeywakey-v*.*.*'
 
+permissions:
+  contents: read # Required for actions/checkout to read your repository code
+  id-token: write # Required for npm provenance generation
+
 jobs:
   npm:
     runs-on: ubuntu-latest
