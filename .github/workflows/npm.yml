@@ -30,10 +30,8 @@ jobs:
       - name: Build project
         run: npm run build:wakeywakey
 
-      - name: Dist
-        run: cd dist/wakeywakey
-
       - name: Publish to NPM
-        run: npm publish
+        working-directory: ./dist/wakeywakey
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
