@@ -1,5 +1,6 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
 import { EventService } from '../../event/event-service';
+import { PlatformService } from '../../platform/platform-service';
 
 @Injectable()
 export class SpeechRecognitionService implements OnDestroy {
@@ -7,6 +8,7 @@ export class SpeechRecognitionService implements OnDestroy {
    * Dependencies
    */
   private readonly _event = inject(EventService);
+  private readonly _platform = inject(PlatformService);
 
   private _recognitionClass!: {
     new (): SpeechRecognition;
@@ -32,7 +34,8 @@ export class SpeechRecognitionService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.reset(); // clear transcript
-    this._recognition.stop();
+
+    if (this._platform.isBrowser) this._recognition.stop();
   }
 
   /**

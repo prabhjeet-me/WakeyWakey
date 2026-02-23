@@ -222,6 +222,7 @@ export class AudioService implements OnDestroy {
       .pipe(
         tap(() => {
           this._isRecording = true;
+          this._speechRecognition.reset();
           this._event.recording.next(); // recording event
         }),
 
