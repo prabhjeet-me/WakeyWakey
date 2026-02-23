@@ -18,24 +18,57 @@ export class SpeechRecognitionService {
    */
   private _recognition!: SpeechRecognition;
 
+  /**
+   * Transcript
+   */
   private _transcript = '';
 
+  /**
+   * Flag for recording
+   */
+  private _isRecognizing = false;
+
+  /**
+   * Get transcript
+   */
   get transcript() {
     return this._transcript;
   }
 
   /**
-   * Transcribe to new speech
+   * Get if recording
+   */
+  get isRecognizing() {
+    return this._isRecognizing;
+  }
+
+  /**
+   * Start recognition
    */
   start() {
+    if (this._isRecognizing) return;
+
     this._recognition.start();
+    this._isRecognizing = true;
   }
 
   /**
    * Stop recognition
    */
   stop() {
+    if (!this._isRecognizing) return;
+
+    this.reset(); // clear transcript
+
     this._recognition.stop();
+    this._isRecognizing = false;
+  }
+
+  /**
+   * Clear transcript
+   */
+  reset() {
+    this._transcript = '';
   }
 
   init() {
