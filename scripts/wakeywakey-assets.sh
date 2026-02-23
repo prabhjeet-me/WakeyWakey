@@ -6,7 +6,7 @@ mkdir -p dist/wakeywakey/assets/models
 mkdir -p dist/wakeywakey/assets/worklets
 
 # Copy onnx runtime files
-cp node_modules/onnxruntime-web/dist/*simd-threaded.{mjs,wasm} ./dist/wakeywakey/assets/wasm/
+cp node_modules/onnxruntime-web/dist/*simd-threaded*.{mjs,wasm} ./dist/wakeywakey/assets/wasm/
 
 # Copy rnnoise wasm files
 cp node_modules/@sapphi-red/web-noise-suppressor/dist/rnnoise*.wasm ./dist/wakeywakey/assets/wasm/
