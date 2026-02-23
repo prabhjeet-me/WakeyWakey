@@ -32,4 +32,11 @@ export class ConfigService {
   get throttleTime() {
     return this._config.throttleTime;
   }
+
+  /**
+   * Mode
+   */
+  get mode() {
+    return this._config.mode;
+  }
 }

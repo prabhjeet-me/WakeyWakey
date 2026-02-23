@@ -29,6 +29,12 @@ export interface Config {
    * Default: 1000 (1 seconds)
    */
   throttleTime?: number;
+
+  /**
+   * DEFAULT: [WAKEWORD] -> Start Recording -> Silence (Spoken chunk & transcript) -> Done -> [WAKEWORD] .....
+   * CHAT: [WAKEWORD] -> Start Recording -> Silence -> [Speaking] ->  Start Recording -> Silence .....
+   */
+  mode?: 'DEFAULT' | 'VOICE_CHAT';
 }
 
 /**
