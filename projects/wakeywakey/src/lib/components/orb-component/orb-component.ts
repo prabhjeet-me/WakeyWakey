@@ -3,16 +3,17 @@ import {
   ElementRef,
   HostListener,
   inject,
-  Input,
   OnChanges,
   OnDestroy,
   OnInit,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+import { SubSink } from 'subsink';
 import * as THREE from 'three';
 import { AudioService } from '../../services/audio/audio-service';
 import { ConfigService } from '../../services/config/config-service';
+import { EventService } from '../../services/event/event-service';
 import { PlatformService } from '../../services/platform/platform-service';
 
 @Component({
@@ -40,14 +41,12 @@ import { PlatformService } from '../../services/platform/platform-service';
 export class OrbComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('rendererContainer', { static: true }) rendererContainer!: ElementRef;
 
-  /**
-   * Intensity of wave
-   */
-  @Input() intensity = 0;
-
   private readonly _config = inject(ConfigService);
   private readonly _platform = inject(PlatformService);
   private readonly _audio = inject(AudioService);
+  private readonly _event = inject(EventService);
+
+  private readonly _subs = new SubSink();
 
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
@@ -55,12 +54,15 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
   private orb!: THREE.Mesh;
   private originalVertices: Float32Array | null = null;
   private animationId!: number;
-
   private targetIntensity = 0;
   private currentIntensity = 0;
-
   private clock = new THREE.Timer();
   private elapsedTime = 0;
+
+  /**
+   * Should orb be reacting to speech
+   */
+  private _isActive = false;
 
   get isRecording() {
     return this._audio.isRecording;
@@ -68,6 +70,19 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
 
   get orbSize() {
     return this._config.orb?.size ?? 400;
+  }
+
+  /**
+   * Change color or orb
+   *
+   * @param color
+   * @param emissive
+   */
+  changeColor(color: THREE.Color, emissive: THREE.Color) {
+    const material = this.orb.material as THREE.MeshStandardMaterial;
+
+    material.color = color;
+    material.emissive = emissive;
   }
 
   /**
@@ -82,6 +97,8 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
 
     this._init();
     this._animate();
+
+    this._loadSubscribers();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -99,6 +116,8 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
     this.renderer.dispose();
     this.orb.geometry.dispose();
     (this.orb.material as THREE.Material).dispose();
+
+    this._subs.unsubscribe();
   }
 
   @HostListener('window:keydown.Space', ['$event'])
@@ -127,11 +146,11 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
     this.originalVertices = geometry.attributes['position'].array.slice() as Float32Array;
 
     const material = new THREE.MeshStandardMaterial({
-      color: 0x00d2ff,
+      color: 'red',
       wireframe: true,
       transparent: true,
       opacity: 0.6,
-      emissive: 0x0066ff,
+      emissive: 'red',
       emissiveIntensity: 0.5,
     });
 
@@ -210,5 +229,31 @@ export class OrbComponent implements OnInit, OnChanges, OnDestroy {
     this.renderer.setSize(width, height);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+  }
+
+  /**
+   * Subscriptions
+   */
+  private _loadSubscribers() {
+    // Speech event
+    this._subs.sink = this._event.speech.subscribe((e) => {
+      if (this._isActive) this.targetIntensity = e.dbNormalized * 100;
+      else this.targetIntensity = 0;
+    });
+
+    // Wake word event
+    this._subs.sink = this._event.wakeword.subscribe(() => {
+      this.changeColor(new THREE.Color(0x00d2ff), new THREE.Color(0x0066ff));
+
+      this._isActive = true;
+    });
+
+    // For default mode
+    if (this._config.mode === 'DEFAULT')
+      this._subs.sink = this._event.silence.subscribe(() => {
+        // on silence, set color to red
+        this.changeColor(new THREE.Color('red'), new THREE.Color('red'));
+        this._isActive = false;
+      });
   }
 }
