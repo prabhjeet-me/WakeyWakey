@@ -1,0 +1,41 @@
+# Changelog
+
+## 1.0.0 (2026-02-23)
+
+
+### Features
+
+* added orb component for voice animation ([16c4a4a](https://github.com/prabhjeet-me/WakeyWakey/commit/16c4a4af999c1d6005cf9284247d7e49601f43c1))
+* **audio-service:** force start/stop recording ([76ca29a](https://github.com/prabhjeet-me/WakeyWakey/commit/76ca29a507d2907a5b3108eedcfb37d723c5b686))
+* **audio-service:** silence detection ([3c88e27](https://github.com/prabhjeet-me/WakeyWakey/commit/3c88e27fb1af440b077a5a81e99136aa73495edf))
+* **audio-service:** utilize pipeline & detect wakeword ([d5c2d9b](https://github.com/prabhjeet-me/WakeyWakey/commit/d5c2d9b4ea346db859c65c77cb7bf32e3d3d2539))
+* **audio:** audio service to fire event on speech with vad score ([200e15f](https://github.com/prabhjeet-me/WakeyWakey/commit/200e15f7c9cc6ee213e4e396824ce5a7e254d493))
+* bundled up/down sound ([f79c0d3](https://github.com/prabhjeet-me/WakeyWakey/commit/f79c0d342785a12d50e917bf2b6c19993eccae03))
+* config & model service for storing inference sessions ([131b861](https://github.com/prabhjeet-me/WakeyWakey/commit/131b8615fe3944c5e76997ca3140429f2ac1dc0f))
+* **config-service:** added mode DEFAULT | VOICE_CHAT ([3300d6b](https://github.com/prabhjeet-me/WakeyWakey/commit/3300d6b38876a5d2359cd80898e78b917cf06d84))
+* **config:** added config service ([2dd2dbd](https://github.com/prabhjeet-me/WakeyWakey/commit/2dd2dbd3d8051adc1b230c445947978f5135680a))
+* **event:** event service for firing events ([2cbbf9e](https://github.com/prabhjeet-me/WakeyWakey/commit/2cbbf9ec91d0feb64f5402caf817a145408086ea))
+* implemented pipeline for wakeword detection ([723427f](https://github.com/prabhjeet-me/WakeyWakey/commit/723427f9933ba312738562fe71ff43f6127cdb7f))
+* implemented VOICE_CHAT mode ([99035c3](https://github.com/prabhjeet-me/WakeyWakey/commit/99035c3c34befcfe854fa3a273446f823ea2d846))
+* **microphone-service:** added noise suppression ([1e5a4c2](https://github.com/prabhjeet-me/WakeyWakey/commit/1e5a4c2323dd3bbb39e909707b110cd56b1b1192))
+* **microphone:** get sampled audio using audio worklet ([598876b](https://github.com/prabhjeet-me/WakeyWakey/commit/598876bfb198bd55ce94aaa0d4844688cfff7c80))
+* **orb-component:** manage own state for voice activity ([2a52485](https://github.com/prabhjeet-me/WakeyWakey/commit/2a52485215e6f9655c0043a344d7b1c1552195f4))
+* **orb-component:** start/stop recording by clicking on orb ([5b29cd9](https://github.com/prabhjeet-me/WakeyWakey/commit/5b29cd9ae14598930e1c7cf67384105ac993e743))
+* **platform:** added platform service ([ce1f7b4](https://github.com/prabhjeet-me/WakeyWakey/commit/ce1f7b45fb10aa514173563d3974135cd37148c1))
+* separated orb component logic ([4b93d5f](https://github.com/prabhjeet-me/WakeyWakey/commit/4b93d5f2903628d0ed222affc51dca569ade3ee6))
+* **speaker-service:** play up/down based on event by self ([5f49b56](https://github.com/prabhjeet-me/WakeyWakey/commit/5f49b56b323a21892bd5e35f89b1df7dc05398ce))
+* **speaker:** added play up & down sounds ([5a0d136](https://github.com/prabhjeet-me/WakeyWakey/commit/5a0d13650204a58a8cbf44b813157f23a23d83f8))
+* **speech recognition:** implemented speech transcript for command ([620c63b](https://github.com/prabhjeet-me/WakeyWakey/commit/620c63b33985588bfdc3e53e67ee43ead9ae5371))
+* **speech-recognition:** refactor + reset fn ([57d5494](https://github.com/prabhjeet-me/WakeyWakey/commit/57d54943a39edf14a4fd4c69348887ada96c6035))
+* **store:** store service for storing inference sessions ([6cda5c4](https://github.com/prabhjeet-me/WakeyWakey/commit/6cda5c491fc65257fbd3e9de0a1629beb9cf82d5))
+* **vad:** implemented voice activity detection using Silero VAD v4 ([9f9bfe3](https://github.com/prabhjeet-me/WakeyWakey/commit/9f9bfe327e726eaf95c8269d2e461ab00a4b7d12))
+* wakey wakey component for output events ([6653c2f](https://github.com/prabhjeet-me/WakeyWakey/commit/6653c2f1b93e5ae847e911dc2f0b8b88757ef661))
+
+
+### Bug Fixes
+
+* **microphone:** cluttering sound ([8f2622b](https://github.com/prabhjeet-me/WakeyWakey/commit/8f2622b300dc1f17a0e7e328140cec11e98ad7ae))
+* **microphone:** noise suppression & echo cancellation ([dc36380](https://github.com/prabhjeet-me/WakeyWakey/commit/dc3638000cbc929d48492be5d3298df58637f194))
+* refactor configs & services ([5ab94e5](https://github.com/prabhjeet-me/WakeyWakey/commit/5ab94e5dfaf7a6036d5218f22373e0c9c3fde450))
+* speech recognition cleanup ([6719b4c](https://github.com/prabhjeet-me/WakeyWakey/commit/6719b4cacc3b4d85857d96f8ddd827bbc2edd7cf))
+* **vad-service:** utilize model service for accessing vad session ([a11123f](https://github.com/prabhjeet-me/WakeyWakey/commit/a11123fd68da00c7c705ddf02ab0ea03eaa8025f))
