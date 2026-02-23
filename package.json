@@ -6,7 +6,7 @@
     "test": "ng test",
     "dev": "ng serve playground --host 0.0.0.0",
     "lint": "ng lint",
-    "build:wakeywakey": "ng build --project wakeywakey"
+    "build:wakeywakey": "ng build --project wakeywakey && ./scripts/wakeywakey-assets.sh"
   },
   "prettier": {
     "printWidth": 100,
@@ -30,6 +30,7 @@
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@angular/ssr": "^20.3.16",
+    "@sapphi-red/web-noise-suppressor": "^0.3.5",
     "express": "^5.1.0",
     "onnxruntime-web": "^1.22.0",
     "rxjs": "~7.8.0",

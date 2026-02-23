@@ -1,4 +1,5 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
+import { loadRnnoise, RnnoiseWorkletNode } from '@sapphi-red/web-noise-suppressor';
 import { Subject } from 'rxjs';
 import { ConfigService } from '../../config/config-service';
 import { EventService } from '../../event/event-service';
@@ -82,8 +83,8 @@ export class MicrophoneService implements OnDestroy {
       this._stream = await navigator.mediaDevices.getUserMedia({
         audio: !deviceId
           ? {
-              noiseSuppression: true,
-              echoCancellation: true,
+              noiseSuppression: false,
+              echoCancellation: false,
             }
           : { deviceId: { exact: deviceId } },
       });
@@ -136,28 +137,51 @@ export class MicrophoneService implements OnDestroy {
 
   /**
    * Prepare worklet node
-   *
-   * @param stream Media stream
    */
   private async _workletNode() {
     // Create audio context
     this._audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
-    const source = this._audioContext.createMediaStreamSource(this._stream);
 
-    // worklet
+    if (this._config.audio.noiseSuppression) {
+      await this._audioContext.audioWorklet.addModule('/rnnoise/workletProcessor.js');
+    }
+
+    // Load custom worklet
     const blob = new Blob([MICROPHONE_PROCESSOR], { type: 'application/javascript' });
     const workletURL = URL.createObjectURL(blob);
     await this._audioContext.audioWorklet.addModule(workletURL);
     URL.revokeObjectURL(workletURL);
 
-    const workletNode = new AudioWorkletNode(this._audioContext, MICROPHONE_PROCESSOR_NAME);
+    // Create Nodes
+    const source = this._audioContext.createMediaStreamSource(this._stream);
 
-    // Add gain
+    // Gain Node
     const gainNode = this._audioContext.createGain();
     gainNode.gain.value = this._config.audio.gain;
 
-    // connect
-    source.connect(gainNode);
+    if (this._config.audio.noiseSuppression) {
+      // Load RNNoise dependencies
+      const rnnoiseWasmBinary = await loadRnnoise({
+        url: '/rnnoise/rnnoise.wasm',
+        simdUrl: '/rnnoise/rnnoise_simd.wasm',
+      });
+
+      // RNNoise Node
+      const rnnoiseNode = new RnnoiseWorkletNode(this._audioContext, {
+        wasmBinary: rnnoiseWasmBinary,
+        maxChannels: 1, // Standard for mono microphone input
+      });
+
+      source.connect(rnnoiseNode);
+      rnnoiseNode.connect(gainNode);
+    } else {
+      source.connect(gainNode);
+    }
+
+    // Custom Worklet Node
+    const workletNode = new AudioWorkletNode(this._audioContext, MICROPHONE_PROCESSOR_NAME);
+
+    // Connect the Graph: Source -> RNNoise (if noise suppression) -> Gain -> Custom Worklet
     gainNode.connect(workletNode);
 
     return workletNode;

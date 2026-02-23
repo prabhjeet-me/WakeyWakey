@@ -22,6 +22,7 @@ export const appConfig: ApplicationConfig = {
           upSound: './sounds/up.mp3',
           downSound: './sounds/down.mp3',
         },
+        noiseSuppression: true,
       },
       orb: {
         size: 400,

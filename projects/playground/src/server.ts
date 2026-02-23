@@ -7,6 +7,22 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 
+// --- SSR / TESTING MOCK ---
+// Prevent Node.js from crashing when evaluating Web Audio API classes
+if (typeof window === 'undefined') {
+  if (typeof global !== 'undefined') {
+    if (!global.AudioWorkletNode) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (global as any).AudioWorkletNode = class {};
+    }
+    if (!global.AudioContext) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (global as any).AudioContext = class {};
+    }
+  }
+}
+// --------------------------
+
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
@@ -41,9 +57,7 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
 

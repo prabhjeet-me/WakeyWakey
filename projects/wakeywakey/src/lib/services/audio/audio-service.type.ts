@@ -19,6 +19,11 @@ export interface AudioConfig {
   silenceDuration?: number;
 
   /**
+   * Use RNN to suppress noise
+   */
+  noiseSuppression?: boolean;
+
+  /**
    * Paths
    */
   path?: {

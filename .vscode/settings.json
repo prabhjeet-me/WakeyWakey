@@ -19,6 +19,8 @@
     "onnxscript",
     "pkief",
     "pycache",
+    "rnnoise",
+    "sapphi",
     "silero",
     "soundfile",
     "tensorflowjs",
@@ -28,6 +30,7 @@
     "uvicorn",
     "wakeword",
     "Wakey",
-    "wakeywakey"
+    "wakeywakey",
+    "Worklet"
   ]
 }
