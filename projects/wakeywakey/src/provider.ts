@@ -5,6 +5,7 @@ import { MicrophoneService } from './lib/services/audio/microphone-service/micro
 import { SpeakerService } from './lib/services/audio/speaker-service/speaker-service';
 import { SpeechRecognitionService } from './lib/services/audio/speech-recognition/speech-recognition-service';
 import { VadService } from './lib/services/audio/vad-service/vad-service';
+import { BridgeService } from './lib/services/bridge/bridge-service';
 import { ConfigService } from './lib/services/config/config-service';
 import { CONFIG, Config } from './lib/services/config/config-service.type';
 import { EventService } from './lib/services/event/event-service';
@@ -34,6 +35,7 @@ export function provideWakeyWakey(config: Config) {
     PipelineService,
     SpeechRecognitionService,
     ModelService,
+    BridgeService,
     provideAppInitializer(async () => {
       const _config = inject(ConfigService);
       const _model = inject(ModelService);
