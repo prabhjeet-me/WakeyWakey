@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.0.1...@prabhjeet.me/wakeywakey-v1.1.0) (2026-02-24)
+
+
+### Features
+
+* **bridge-service:** ready event now emits instance of internal services ([4c3de6a](https://github.com/prabhjeet-me/WakeyWakey/commit/4c3de6aff768ddab97ff92e29def101c2ebf7b8a))
+
+
+### Bug Fixes
+
+* **audio:** cleanup + exception if permission not granted ([9f859ef](https://github.com/prabhjeet-me/WakeyWakey/commit/9f859efed7922aadd59c8e015bc669a8a9606701))
+* **microphone:** in case of multiple microphones ([b265290](https://github.com/prabhjeet-me/WakeyWakey/commit/b2652908ec383a4240771bf9b7ff35b721bca748))
+
 ## [1.0.1](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.0.0...@prabhjeet.me/wakeywakey-v1.0.1) (2026-02-23)
 
 
