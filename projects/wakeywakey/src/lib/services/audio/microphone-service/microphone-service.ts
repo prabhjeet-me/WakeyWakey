@@ -62,6 +62,9 @@ export class MicrophoneService implements OnDestroy {
   ngOnDestroy(): void {
     // close audio context
     this._audioContext?.close();
+    this._stream?.getTracks().forEach((track) => {
+      track.stop();
+    });
   }
 
   /**

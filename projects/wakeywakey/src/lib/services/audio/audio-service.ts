@@ -27,7 +27,6 @@ import { VAD_HANGOVER_FRAMES, VadState } from '../model/model-service.type';
 import { PipelineService } from '../pipeline/pipeline-service';
 import { DEFAULT_SILENCE_DURATION } from './audio-service.const';
 import { MicrophoneService } from './microphone-service/microphone-service';
-import { SpeakerService } from './speaker-service/speaker-service';
 import { SpeechRecognitionService } from './speech-recognition/speech-recognition-service';
 import { VadService } from './vad-service/vad-service';
 import { DEFAULT_VAD_THRESHOLD } from './vad-service/vad-service.const';
@@ -37,7 +36,6 @@ export class AudioService implements OnDestroy {
   /**
    * Dependencies
    */
-  private readonly __speaker = inject(SpeakerService); // Initialize
   private readonly _config = inject(ConfigService);
   private readonly _event = inject(EventService);
   private readonly _mic = inject(MicrophoneService);
@@ -71,6 +69,11 @@ export class AudioService implements OnDestroy {
    * Initialize audio
    */
   async init() {
+    if (!this._mic.microphones.length) {
+      this._event.exception.next(new Error('Microphone permission required!'));
+      return;
+    }
+
     const data = await this._mic.data;
 
     // Init VAD
