@@ -5,6 +5,7 @@ import { MicrophoneService } from './lib/services/audio/microphone-service/micro
 import { SpeakerService } from './lib/services/audio/speaker-service/speaker-service';
 import { SpeechRecognitionService } from './lib/services/audio/speech-recognition/speech-recognition-service';
 import { VadService } from './lib/services/audio/vad-service/vad-service';
+import { BridgeService } from './lib/services/bridge/bridge-service';
 import { ConfigService } from './lib/services/config/config-service';
 import { CONFIG, Config } from './lib/services/config/config-service.type';
 import { EventService } from './lib/services/event/event-service';
@@ -34,10 +35,12 @@ export function provideWakeyWakey(config: Config) {
     PipelineService,
     SpeechRecognitionService,
     ModelService,
+    BridgeService,
     provideAppInitializer(async () => {
       const _config = inject(ConfigService);
       const _model = inject(ModelService);
       const _platform = inject(PlatformService);
+      const _mic = inject(MicrophoneService);
 
       if (_platform.isServer) return;
 
@@ -52,18 +55,19 @@ export function provideWakeyWakey(config: Config) {
       ];
 
       // Create sessions
-      const sessions = await Promise.all(
-        Object.values(modelPath).map((path) =>
+      const sessions = await Promise.all([
+        ...Object.values(modelPath).map((path) =>
           InferenceSession.create(path, { executionProviders: ['wasm'] }),
         ),
-      );
+        _mic.init(),
+      ]);
 
       // set sessions
       _model.session = {
-        melspectrogram: sessions[0],
-        embedding_model: sessions[1],
-        silero_vad: sessions[2],
-        wakeword: sessions[3],
+        melspectrogram: sessions[0] as InferenceSession,
+        embedding_model: sessions[1] as InferenceSession,
+        silero_vad: sessions[2] as InferenceSession,
+        wakeword: sessions[3] as InferenceSession,
       };
     }),
   ];

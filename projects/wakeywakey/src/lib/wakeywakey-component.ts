@@ -3,10 +3,10 @@ import { throttleTime } from 'rxjs';
 import { SubSink } from 'subsink';
 import { OrbComponent } from './components/orb-component/orb-component';
 import { AudioService } from './services/audio/audio-service';
+import { BridgeService } from './services/bridge/bridge-service';
 import { ConfigService } from './services/config/config-service';
 import { EventService } from './services/event/event-service';
 import { SilenceEvent, SpeechEvent, WakeWordEvent } from './services/event/event-service.type';
-import { ModelService } from './services/model/model-service';
 import { PlatformService } from './services/platform/platform-service';
 
 const DEFAULT_THROTTLE_TIME = 1000;
@@ -19,9 +19,9 @@ const DEFAULT_THROTTLE_TIME = 1000;
 })
 export class WakeyWakeyComponent implements OnInit, OnDestroy {
   /**
-   * Fires when library loaded
+   * Fires when library loaded. Emits bridge service event
    */
-  @Output() ready = new EventEmitter<void>();
+  @Output() ready = new EventEmitter<BridgeService>();
 
   /**
    * Fires when there is an error
@@ -59,7 +59,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
   private readonly _platform = inject(PlatformService);
   private readonly _event = inject(EventService);
   private readonly _audio = inject(AudioService);
-  private readonly _model = inject(ModelService);
+  private readonly _bridge = inject(BridgeService);
 
   /**
    * Subscriptions
@@ -110,8 +110,8 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
    */
   private _listenEvents() {
     // Ready event
-    this._subs.sink = this._event.ready.subscribe((e) => {
-      this.ready.emit(e);
+    this._subs.sink = this._event.ready.subscribe(() => {
+      this.ready.emit(this._bridge);
     });
 
     // Exception event

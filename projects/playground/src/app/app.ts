@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import {
   WakeyWakeyAudioUtil,
+  WakeyWakeyBridgeService,
   WakeyWakeyComponent,
   WakeyWakeySilenceEvent,
   WakeyWakeySpeechEvent,
@@ -40,6 +41,10 @@ export class App {
   }
 
   log(ev: unknown) {
+    console.log(ev);
+  }
+
+  ready(ev: WakeyWakeyBridgeService) {
     console.log(ev);
   }
 

@@ -1,4 +1,5 @@
 export { AudioUtil as WakeyWakeyAudioUtil } from './audio/audio-service.util';
+export { BridgeService as WakeyWakeyBridgeService } from './bridge/bridge-service';
 export { CONFIG as WAKEYWAKEY_CONFIG } from './config/config-service.type';
 
 export type { AudioConfig as WakeyWakeyAudioConfig } from './audio/audio-service.type';
