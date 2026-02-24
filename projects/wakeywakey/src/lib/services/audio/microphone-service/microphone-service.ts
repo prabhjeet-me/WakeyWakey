@@ -38,11 +38,6 @@ export class MicrophoneService implements OnDestroy {
    */
   private _audioContext?: AudioContext;
 
-  constructor() {
-    // Init mic
-    this._init();
-  }
-
   /**
    * List of available microphones
    */
@@ -61,7 +56,7 @@ export class MicrophoneService implements OnDestroy {
    * Set input source
    */
   set source(deviceId: string) {
-    this._init(deviceId);
+    this.init(deviceId);
   }
 
   ngOnDestroy(): void {
@@ -74,19 +69,14 @@ export class MicrophoneService implements OnDestroy {
    *
    * @param deviceId Input device id (from microphone list)
    */
-  private async _init(deviceId?: string) {
+  async init(deviceId = 'default') {
     try {
       // cleanup
       this.ngOnDestroy();
 
       // request permission
       this._stream = await navigator.mediaDevices.getUserMedia({
-        audio: !deviceId
-          ? {
-              noiseSuppression: false,
-              echoCancellation: false,
-            }
-          : { deviceId: { exact: deviceId } },
+        audio: { deviceId: { exact: deviceId }, noiseSuppression: false, echoCancellation: false },
       });
 
       this._event.log.next(
