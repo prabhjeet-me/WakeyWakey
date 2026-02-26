@@ -3,6 +3,7 @@ import {
   WakeyWakeyAudioUtil,
   WakeyWakeyBridgeService,
   WakeyWakeyComponent,
+  WakeyWakeyRecordingEvent,
   WakeyWakeySilenceEvent,
   WakeyWakeySpeechEvent,
   WakeyWakeyWordEvent,
@@ -26,6 +27,8 @@ export class App {
   }
 
   wakeword(ev: WakeyWakeyWordEvent) {
+    console.log('WW');
+
     this.wavBlobUrl('', WakeyWakeyAudioUtil.createWavBlob(ev.chunk!)!);
   }
 
@@ -42,6 +45,10 @@ export class App {
 
   log(ev: unknown) {
     console.log(ev);
+  }
+
+  recording(ev: WakeyWakeyRecordingEvent) {
+    console.log(ev.transcript);
   }
 
   ready(ev: WakeyWakeyBridgeService) {

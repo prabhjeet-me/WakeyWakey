@@ -244,7 +244,6 @@ export class AudioService implements OnDestroy {
         tap(() => {
           this._isRecording = true;
           this._speechRecognition.reset();
-          this._event.recording.next(); // recording event
         }),
 
         switchMap((bufferedChunks) => {
@@ -252,7 +251,15 @@ export class AudioService implements OnDestroy {
           const commandChunks: Float32Array[] = [...bufferedChunks];
 
           const speech$ = this._event.speech.pipe(
-            tap((speech) => commandChunks.push(speech.sample)),
+            tap((speech) => {
+              commandChunks.push(speech.sample);
+
+              // emit recording events
+              this._event.recording.next({
+                chunk: this._flatten(commandChunks),
+                transcript: this._speechRecognition.transcript,
+              });
+            }),
             share(),
           );
 

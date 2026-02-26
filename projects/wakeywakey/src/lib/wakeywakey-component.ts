@@ -6,7 +6,12 @@ import { AudioService } from './services/audio/audio-service';
 import { BridgeService } from './services/bridge/bridge-service';
 import { ConfigService } from './services/config/config-service';
 import { EventService } from './services/event/event-service';
-import { SilenceEvent, SpeechEvent, WakeWordEvent } from './services/event/event-service.type';
+import {
+  RecordingEvent,
+  SilenceEvent,
+  SpeechEvent,
+  WakeWordEvent,
+} from './services/event/event-service.type';
 import { PlatformService } from './services/platform/platform-service';
 
 const DEFAULT_THROTTLE_TIME = 1000;
@@ -41,7 +46,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
   /**
    * Fires when recording starts (after wake word detection)
    */
-  @Output() recording = new EventEmitter<void>();
+  @Output() recording = new EventEmitter<RecordingEvent>();
 
   /**
    * Fires silence is detected
