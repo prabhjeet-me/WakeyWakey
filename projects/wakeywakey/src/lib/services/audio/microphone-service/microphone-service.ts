@@ -53,6 +53,13 @@ export class MicrophoneService implements OnDestroy {
   }
 
   /**
+   * Audio context
+   */
+  get audioContent() {
+    return this._audioContext;
+  }
+
+  /**
    * Set input source
    */
   set source(deviceId: string) {
