@@ -15,6 +15,7 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      '@typescript-eslint/adjacent-overload-signatures': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {

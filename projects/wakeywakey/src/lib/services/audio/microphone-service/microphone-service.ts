@@ -44,6 +44,11 @@ export class MicrophoneService implements OnDestroy {
   private _isMuted = false;
 
   /**
+   * Gain node
+   */
+  private _gainNode?: GainNode | undefined;
+
+  /**
    * List of available microphones
    */
   get microphones() {
@@ -69,6 +74,13 @@ export class MicrophoneService implements OnDestroy {
    */
   get isMuted() {
     return this._isMuted;
+  }
+
+  /**
+   * Set gain
+   */
+  set gain(value: number) {
+    if (this._gainNode) this._gainNode.gain.value = value;
   }
 
   /**
