@@ -19,7 +19,7 @@ export const appConfig: ApplicationConfig = {
       audio: {
         gain: 1,
         noiseSuppression: {
-          enable: true,
+          rnnBased: true,
         },
       },
       orb: {

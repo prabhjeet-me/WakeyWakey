@@ -117,7 +117,12 @@ export class MicrophoneService implements OnDestroy {
 
       // request permission
       this._stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: { exact: deviceId }, noiseSuppression: false, echoCancellation: false },
+        audio: {
+          deviceId: { exact: deviceId },
+          noiseSuppression: this._config.audio.noiseSuppression?.nativeNoiseSuppression || false,
+          echoCancellation: this._config.audio.noiseSuppression?.nativeEchoCancellation || false,
+          autoGainControl: this._config.audio.noiseSuppression?.autoGainControl || false,
+        },
       });
 
       this._event.log.next(

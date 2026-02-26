@@ -23,9 +23,24 @@ export interface AudioConfig {
    */
   noiseSuppression?: {
     /**
-     * Enable noise suppression
+     * Enable RNN based noise suppression
      */
-    enable?: boolean;
+    rnnBased?: boolean;
+
+    /**
+     * Native noise suppression
+     */
+    nativeNoiseSuppression?: boolean;
+
+    /**
+     * Native echo cancellation
+     */
+    nativeEchoCancellation?: boolean;
+
+    /**
+     * Native auto gain control
+     */
+    autoGainControl?: boolean;
 
     /**
      * RNNoise worklet js
