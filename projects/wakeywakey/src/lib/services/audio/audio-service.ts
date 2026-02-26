@@ -91,7 +91,8 @@ export class AudioService implements OnDestroy {
       // Fire a speech event
       this._event.speech.next({
         ...data,
-        vadScore: await this._vad.score(data.sample),
+        sample: this._mic.isMuted ? new Float32Array(1280).fill(0) : data.sample, // no speech data if muted
+        vadScore: await this._vad.score(data.sample), // emit vad score even if muted
         get hasVoiceActivity() {
           return this.vadScore > (that._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD);
         },

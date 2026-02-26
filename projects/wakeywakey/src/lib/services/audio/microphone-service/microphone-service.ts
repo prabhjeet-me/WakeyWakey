@@ -39,6 +39,11 @@ export class MicrophoneService implements OnDestroy {
   private _audioContext?: AudioContext;
 
   /**
+   * Is muted
+   */
+  private _isMuted = false;
+
+  /**
    * List of available microphones
    */
   get microphones() {
@@ -57,6 +62,20 @@ export class MicrophoneService implements OnDestroy {
    */
   get audioContent() {
     return this._audioContext;
+  }
+
+  /**
+   * Muted state
+   */
+  get isMuted() {
+    return this._isMuted;
+  }
+
+  /**
+   * Set muted state
+   */
+  set isMuted(set: boolean) {
+    this._isMuted = set;
   }
 
   /**
