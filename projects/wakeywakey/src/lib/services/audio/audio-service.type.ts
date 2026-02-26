@@ -19,6 +19,11 @@ export interface AudioConfig {
   silenceDuration?: number;
 
   /**
+   * Wait (in ms) before considering user has started speaking
+   */
+  speechThresholdTime?: number;
+
+  /**
    * Use RNN to suppress noise
    */
   noiseSuppression?: {
