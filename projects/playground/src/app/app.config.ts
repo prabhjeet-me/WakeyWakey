@@ -20,7 +20,11 @@ export const appConfig: ApplicationConfig = {
         gain: 1,
         noiseSuppression: {
           rnnBased: true,
+          nativeNoiseSuppression: true,
+          nativeEchoCancellation: true,
+          autoGainControl: false,
         },
+        speechThresholdTime: 300,
       },
       orb: {
         size: 400,
