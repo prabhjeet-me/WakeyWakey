@@ -27,14 +27,11 @@ export class App {
   }
 
   wakeword(ev: WakeyWakeyWordEvent) {
-    console.log('WW');
-
-    this.wavBlobUrl('', WakeyWakeyAudioUtil.createWavBlob(ev.chunk!)!);
+    this.wavBlobUrl('WakeWord', WakeyWakeyAudioUtil.createWavBlob(ev.chunk!)!);
   }
 
   silence(ev: WakeyWakeySilenceEvent) {
-    console.log('silence:', ev.transcript);
-    this.wavBlobUrl(ev.transcript, WakeyWakeyAudioUtil.createWavBlob([ev.chunk])!);
+    this.wavBlobUrl('Silence: ' + ev.transcript, WakeyWakeyAudioUtil.createWavBlob([ev.chunk])!);
   }
 
   speech(ev: WakeyWakeySpeechEvent) {
@@ -48,7 +45,7 @@ export class App {
   }
 
   recording(ev: WakeyWakeyRecordingEvent) {
-    console.log(ev.transcript);
+    if (ev.transcript) console.log(ev.transcript);
   }
 
   ready(ev: WakeyWakeyBridgeService) {

@@ -1,4 +1,5 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
+import { throttleTime } from 'rxjs';
 import { SubSink } from 'subsink';
 import { ConfigService } from '../../config/config-service';
 import { EventService } from '../../event/event-service';
@@ -62,9 +63,11 @@ export class SpeakerService implements OnDestroy {
    * Load subscriptions
    */
   private _loadSubscriptions() {
-    this._subs.sink = this._event.wakeword.subscribe(() => {
-      this.playUp();
-    });
+    this._subs.sink = this._event.wakeword
+      .pipe(throttleTime(this._config.throttleTime))
+      .subscribe(() => {
+        this.playUp();
+      });
 
     // If default, on silence, play down
     this._subs.sink = this._event.silence.subscribe((ev) => {

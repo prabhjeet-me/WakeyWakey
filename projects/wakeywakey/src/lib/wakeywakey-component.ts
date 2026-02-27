@@ -14,8 +14,6 @@ import {
 } from './services/event/event-service.type';
 import { PlatformService } from './services/platform/platform-service';
 
-const DEFAULT_THROTTLE_TIME = 1000;
-
 @Component({
   selector: 'wakeywakey',
   imports: [OrbComponent],
@@ -131,7 +129,7 @@ export class WakeyWakeyComponent implements OnInit, OnDestroy {
 
     // Wake word event
     this._subs.sink = this._event.wakeword
-      .pipe(throttleTime(this._config.throttleTime ?? DEFAULT_THROTTLE_TIME))
+      .pipe(throttleTime(this._config.throttleTime))
       .subscribe((e) => {
         this.wakeword.emit(e);
       });

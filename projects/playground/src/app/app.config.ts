@@ -31,8 +31,9 @@ export const appConfig: ApplicationConfig = {
       },
       onnx: {
         model: {
-          wakeword: '/wakeywakey/models/hey_jarvis_v0.1.onnx',
+          wakeword: '/wakeywakey/models/alexa_v0.1.onnx',
         },
+        wakeword: ['alexa'],
       },
       mode: 'VOICE_CHAT',
     }),

@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { DEFAULT_THROTTLE_TIME } from '../../wakeywakey-component.const';
 import { Config, CONFIG } from './config-service.type';
 
 @Injectable()
@@ -30,7 +31,7 @@ export class ConfigService {
    * Throttle time
    */
   get throttleTime() {
-    return this._config.throttleTime;
+    return this._config.throttleTime ?? DEFAULT_THROTTLE_TIME;
   }
 
   /**

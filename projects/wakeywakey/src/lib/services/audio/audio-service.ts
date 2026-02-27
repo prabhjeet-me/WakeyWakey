@@ -127,6 +127,7 @@ export class AudioService implements OnDestroy {
    */
   forceEndRecording() {
     this._endCurrentRecording = true;
+    this._isInitialized = false;
 
     this._event.silence.next({
       chunk: new Float32Array(),
@@ -153,17 +154,35 @@ export class AudioService implements OnDestroy {
 
     this._subs.sink = this._event.speech
       .pipe(
+        filter(() => !this._isInitialized && !this._mic.isMuted),
         withLatestFrom(vad$),
         concatMap(async ([speech, vadState]) => {
           const score = await this._pipeline.run(speech);
           return { speech, score, chunk: vadState.buffer };
         }),
-        filter(
-          ({ score }) =>
-            score > (this._config.onnx.wakewordInferenceThreshold ?? DEFAULT_INFERENCE_SCORE),
-        ),
+        filter(({ score }) => {
+          if (this._config.onnx.wakeword) {
+            const transcriptArray = this._speechRecognition.transcript
+              .toLowerCase()
+              .trim()
+              .split(' ');
+
+            // use speech recognition for wake word identification
+            if (transcriptArray.length === this._config.onnx.wakeword.length)
+              for (const idx in this._config.onnx.wakeword)
+                if (
+                  +idx < transcriptArray.length &&
+                  transcriptArray[idx].includes(this._config.onnx.wakeword[idx].toLowerCase())
+                )
+                  return true;
+          }
+
+          return score > (this._config.onnx.wakewordInferenceThreshold ?? DEFAULT_INFERENCE_SCORE);
+        }),
       )
       .subscribe(({ speech, score, chunk }) => {
+        console.log('called');
+
         this._event.wakeword.next({ ...speech, inferenceScore: score, chunk });
       });
   }
@@ -235,7 +254,7 @@ export class AudioService implements OnDestroy {
       ),
       continuousVadTrigger$,
     ).pipe(
-      throttleTime(1000), // Prevent double-firing if wakeword and voice overlap
+      throttleTime(this._config.throttleTime), // Prevent double-firing if wakeword and voice overlap
     );
 
     // recording pipeline
@@ -254,11 +273,12 @@ export class AudioService implements OnDestroy {
             tap((speech) => {
               commandChunks.push(speech.sample);
 
-              // emit recording events
-              this._event.recording.next({
-                chunk: this._flatten(commandChunks),
-                transcript: this._speechRecognition.transcript,
-              });
+              if (this._isRecording)
+                // emit recording events
+                this._event.recording.next({
+                  chunk: this._flatten(commandChunks),
+                  transcript: this._speechRecognition.transcript,
+                });
             }),
             share(),
           );
@@ -307,8 +327,9 @@ export class AudioService implements OnDestroy {
           // Default case
           if (this._config.mode === 'DEFAULT' || this._config.mode === 'PTT') {
             this._isInitialized = false;
-            this._endCurrentRecording = false; // reset flag after recording ends
           }
+
+          this._endCurrentRecording = false; // reset flag after recording ends
 
           this._isRecording = false;
         },

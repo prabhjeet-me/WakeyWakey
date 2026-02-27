@@ -1,5 +1,6 @@
 import { inject, provideAppInitializer } from '@angular/core';
 import { env, InferenceSession } from 'onnxruntime-web';
+import { OrbComponentService } from './lib/components/orb-component/orb-component-service';
 import { AudioService } from './lib/services/audio/audio-service';
 import { MicrophoneService } from './lib/services/audio/microphone-service/microphone-service';
 import { SpeakerService } from './lib/services/audio/speaker-service/speaker-service';
@@ -36,6 +37,7 @@ export function provideWakeyWakey(config: Config) {
     SpeechRecognitionService,
     ModelService,
     BridgeService,
+    OrbComponentService,
     provideAppInitializer(async () => {
       const _config = inject(ConfigService);
       const _model = inject(ModelService);
