@@ -34,6 +34,11 @@ export class MicrophoneService implements OnDestroy {
   private _stream!: MediaStream;
 
   /**
+   * Media steam source
+   */
+  private _source?: MediaStreamAudioSourceNode;
+
+  /**
    * Audio context
    */
   private _audioContext?: AudioContext;
@@ -65,8 +70,15 @@ export class MicrophoneService implements OnDestroy {
   /**
    * Audio context
    */
-  get audioContent() {
+  get audioContext() {
     return this._audioContext;
+  }
+
+  /**
+   * Media steam source node
+   */
+  get sourceNode() {
+    return this._source;
   }
 
   /**
@@ -100,6 +112,7 @@ export class MicrophoneService implements OnDestroy {
   ngOnDestroy(): void {
     // close audio context
     this._audioContext?.close();
+    this._source?.disconnect();
     this._stream?.getTracks().forEach((track) => {
       track.stop();
     });
@@ -192,7 +205,7 @@ export class MicrophoneService implements OnDestroy {
     URL.revokeObjectURL(workletURL);
 
     // Create Nodes
-    const source = this._audioContext.createMediaStreamSource(this._stream);
+    this._source = this._audioContext.createMediaStreamSource(this._stream);
 
     // Gain Node
     const gainNode = this._audioContext.createGain();
@@ -215,10 +228,10 @@ export class MicrophoneService implements OnDestroy {
         maxChannels: 1, // Standard for mono microphone input
       });
 
-      source.connect(rnnoiseNode);
+      this._source.connect(rnnoiseNode);
       rnnoiseNode.connect(gainNode);
     } else {
-      source.connect(gainNode);
+      this._source.connect(gainNode);
     }
 
     // Custom Worklet Node
