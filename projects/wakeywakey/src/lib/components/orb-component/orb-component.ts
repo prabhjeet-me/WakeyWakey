@@ -231,7 +231,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
-    this.camera.position.z = 5;
+    this.camera.position.z = 6;
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -239,11 +239,11 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
 
     this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
 
-    const particlesCount = 30000;
+    const particlesCount = this._config.orb?.particlesCount ?? 20000;
     this.geometry = new THREE.BufferGeometry();
     const posArray = new Float32Array(particlesCount * 3);
     const randomArray = new Float32Array(particlesCount);
-    const radius = 1.8;
+    const radius = this._config.orb?.radius ?? 1.8;
 
     for (let i = 0; i < particlesCount; i++) {
       const phi = Math.acos(-1 + (2 * i) / particlesCount);
@@ -290,7 +290,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     let dynamicPulse = this.targets.pulse;
 
     if (this.currentState === 'listening') {
-      dynamicSpike += this.micVolume * 1.5;
+      dynamicSpike += this.micVolume * 1.0;
     } else if (this.currentState === 'speaking') {
       const ttsVolume = this._getTTSVolume();
       dynamicPulse += ttsVolume * 15;
@@ -313,7 +313,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     this.material.uniforms['uColorPeak'].value.lerp(this.targetColorPeak, lerpFactor);
 
     this.sphere.rotation.y = elapsedTime * 0.1;
-    this.sphere.rotation.z = elapsedTime * 0.05;
+    this.sphere.rotation.z = elapsedTime * 0.01;
 
     this.renderer.render(this.scene, this.camera);
   };
