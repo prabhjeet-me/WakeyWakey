@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.0.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.1.0...@prabhjeet.me/wakeywakey-v2.0.0) (2026-02-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* recoding event emit interim transcript & audio chunks
+
+### Features
+
+* added PTT mode ([541b939](https://github.com/prabhjeet-me/WakeyWakey/commit/541b9399cec45b29df27c034cfbb0fb244fc617c))
+* **audio:** implemented mic mute/unmute ([126eb6a](https://github.com/prabhjeet-me/WakeyWakey/commit/126eb6a3ca48f829709be0f2d4e26aa71385b7d9))
+* **audio:** use speech recognition API for detecting wakeword ([7a1aea9](https://github.com/prabhjeet-me/WakeyWakey/commit/7a1aea90e2efe534664c3912234bc430f16f770b))
+* **microphone-service:** expose audio context ([40db0a6](https://github.com/prabhjeet-me/WakeyWakey/commit/40db0a660cfe095420289e4f999d0590762c59da))
+* **microphone-service:** expose sourceNode ([3c712a2](https://github.com/prabhjeet-me/WakeyWakey/commit/3c712a22bf33d3aab1d343fae05f71c14b5b73df))
+* **microphone:** ability to adjust gain on runtime ([0d11dbb](https://github.com/prabhjeet-me/WakeyWakey/commit/0d11dbb210d1a07426eabdc614444039cefc57a9))
+* **microphone:** configurable rnn, native noise suppression & other controls ([f1c2e73](https://github.com/prabhjeet-me/WakeyWakey/commit/f1c2e73851a86437138d56ef7cf9dbf334eef099))
+* **orb-component:** configurable particles & radius ([b02398c](https://github.com/prabhjeet-me/WakeyWakey/commit/b02398c4d1ca6569c7948c50f8a85c89eee95665))
+* **orb-component:** updated for 4 states (idle, listening, speaking, thinking) + service ([1a2c7b6](https://github.com/prabhjeet-me/WakeyWakey/commit/1a2c7b6023fde60c43eeaf31bb0c3cd4745911ce))
+* recoding event emit interim transcript & audio chunks ([44fb0c3](https://github.com/prabhjeet-me/WakeyWakey/commit/44fb0c3f907b892567f6408d13a66b52a337162b))
+* updated orb, animate orb based on input mic & audio ([63f9c90](https://github.com/prabhjeet-me/WakeyWakey/commit/63f9c907a726301a7a19f4ef81077fe211de522b))
+
+
+### Bug Fixes
+
+* **audio:** keep capturing chunks till threshold is reached so no audio is lost ([3220ca9](https://github.com/prabhjeet-me/WakeyWakey/commit/3220ca94811d845f263f73278d25663f64974b76))
+
 ## [1.1.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.0.1...@prabhjeet.me/wakeywakey-v1.1.0) (2026-02-24)
 
 
