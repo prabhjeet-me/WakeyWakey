@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { SilenceEvent, SpeechEvent, WakeWordEvent } from './event-service.type';
+import { RecordingEvent, SilenceEvent, SpeechEvent, WakeWordEvent } from './event-service.type';
 
 @Injectable()
 export class EventService {
@@ -32,7 +32,7 @@ export class EventService {
   /**
    * Fires when recording starts (after wake word detection)
    */
-  readonly recording = new Subject<void>();
+  readonly recording = new Subject<RecordingEvent>();
 
   /**
    * Fires silence is detected

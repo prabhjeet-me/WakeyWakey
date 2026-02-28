@@ -12,6 +12,11 @@ export interface AudioConfig {
   vadThreshold?: number;
 
   /**
+   * Emit mic sound to speakers
+   */
+  loopBackToSpeakers?: boolean;
+
+  /**
    * Silence duration
    *
    * Default: 1000ms
@@ -19,13 +24,33 @@ export interface AudioConfig {
   silenceDuration?: number;
 
   /**
+   * Wait (in ms) before considering user has started speaking
+   */
+  speechThresholdTime?: number;
+
+  /**
    * Use RNN to suppress noise
    */
   noiseSuppression?: {
     /**
-     * Enable noise suppression
+     * Enable RNN based noise suppression
      */
-    enable?: boolean;
+    rnnBased?: boolean;
+
+    /**
+     * Native noise suppression
+     */
+    nativeNoiseSuppression?: boolean;
+
+    /**
+     * Native echo cancellation
+     */
+    nativeEchoCancellation?: boolean;
+
+    /**
+     * Native auto gain control
+     */
+    autoGainControl?: boolean;
 
     /**
      * RNNoise worklet js

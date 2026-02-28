@@ -5,13 +5,14 @@
       (exception)="exception($event)"
       (wakeword)="wakeword($event)"
       (ready)="ready($event)"
-      (recording)="log('recording')"
+      (recording)="recording($event)"
       (silence)="silence($event)"
     ></wakeywakey>
   </div>
   <div class="root">
     <h1>WakeyWakey</h1>
     <h2>Wake Word Detector</h2>
+    <button (click)="play()">Play</button>
 
     <div class="content">
       <div class="title">VAD Score: {{ vadScore }}</div>

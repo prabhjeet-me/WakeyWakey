@@ -14,6 +14,7 @@ npm i -g @angular/cli@20
 npm i
 
 echo "source <(ng completion script)" >> ~/.bashrc
+echo "alias nr='npm run'" >> ~/.bashrc
 
 source ~/.bashrc
 

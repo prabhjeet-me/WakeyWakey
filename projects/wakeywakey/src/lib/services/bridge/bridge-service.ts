@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { OrbComponentService } from '../../components/orb-component/orb-component-service';
 import { AudioService } from '../audio/audio-service';
 import { MicrophoneService } from '../audio/microphone-service/microphone-service';
 import { SpeakerService } from '../audio/speaker-service/speaker-service';
@@ -22,4 +23,5 @@ export class BridgeService {
   readonly model = inject(ModelService);
   readonly pipeline = inject(PipelineService);
   readonly platform = inject(PlatformService);
+  readonly orbComponentService = inject(OrbComponentService);
 }

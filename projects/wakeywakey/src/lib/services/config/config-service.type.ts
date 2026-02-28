@@ -31,10 +31,10 @@ export interface Config {
   throttleTime?: number;
 
   /**
-   * DEFAULT: [WAKEWORD] -> Start Recording -> Silence (Spoken chunk & transcript) -> Done -> [WAKEWORD] .....
+   * DEFAULT | PTT: [WAKEWORD] -> Start Recording -> Silence (Spoken chunk & transcript) -> Done -> [WAKEWORD] .....
    * CHAT: [WAKEWORD] -> Start Recording -> Silence -> [Speaking] ->  Start Recording -> Silence .....
    */
-  mode?: 'DEFAULT' | 'VOICE_CHAT';
+  mode?: 'DEFAULT' | 'VOICE_CHAT' | 'PTT';
 
   /**
    * Base asset path. This path will be used to access required resources
@@ -42,6 +42,13 @@ export interface Config {
    * Default: /wakeywakey
    */
   basePath?: string;
+
+  /**
+   * Key to use to activate listening (instead of wakeword)
+   *
+   * 'code' property of KeyboardEvent
+   */
+  hotkey?: string;
 }
 
 /**

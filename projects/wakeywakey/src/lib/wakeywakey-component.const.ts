@@ -1,0 +1,1 @@
+export const DEFAULT_THROTTLE_TIME = 1000;

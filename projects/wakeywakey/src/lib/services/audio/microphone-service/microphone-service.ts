@@ -34,9 +34,26 @@ export class MicrophoneService implements OnDestroy {
   private _stream!: MediaStream;
 
   /**
+   * Media steam source
+   */
+  private _source?: MediaStreamAudioSourceNode;
+
+  /**
    * Audio context
    */
   private _audioContext?: AudioContext;
+
+  /**
+   * Is muted
+   */
+  private _isMuted = false;
+
+  /**
+   * Gain node
+   */
+  private _gainNode?: GainNode | undefined;
+
+  private _analyser?: AnalyserNode;
 
   /**
    * List of available microphones
@@ -53,6 +70,48 @@ export class MicrophoneService implements OnDestroy {
   }
 
   /**
+   * Audio context
+   */
+  get audioContext() {
+    return this._audioContext;
+  }
+
+  /**
+   * Analyzer node
+   */
+  get analyzer() {
+    return this._analyser;
+  }
+
+  /**
+   * Media steam source node
+   */
+  get sourceNode() {
+    return this._source;
+  }
+
+  /**
+   * Muted state
+   */
+  get isMuted() {
+    return this._isMuted;
+  }
+
+  /**
+   * Set gain
+   */
+  set gain(value: number) {
+    if (this._gainNode) this._gainNode.gain.value = value;
+  }
+
+  /**
+   * Set muted state
+   */
+  set isMuted(set: boolean) {
+    this._isMuted = set;
+  }
+
+  /**
    * Set input source
    */
   set source(deviceId: string) {
@@ -62,6 +121,8 @@ export class MicrophoneService implements OnDestroy {
   ngOnDestroy(): void {
     // close audio context
     this._audioContext?.close();
+    this._source?.disconnect();
+    this._analyser?.disconnect();
     this._stream?.getTracks().forEach((track) => {
       track.stop();
     });
@@ -79,7 +140,12 @@ export class MicrophoneService implements OnDestroy {
 
       // request permission
       this._stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: { exact: deviceId }, noiseSuppression: false, echoCancellation: false },
+        audio: {
+          deviceId: { exact: deviceId },
+          noiseSuppression: this._config.audio.noiseSuppression?.nativeNoiseSuppression || false,
+          echoCancellation: this._config.audio.noiseSuppression?.nativeEchoCancellation || false,
+          autoGainControl: this._config.audio.noiseSuppression?.autoGainControl || false,
+        },
       });
 
       this._event.log.next(
@@ -90,7 +156,7 @@ export class MicrophoneService implements OnDestroy {
       this._microphones = await this._microphoneList();
 
       // monitor audio
-      this._monitor();
+      await this._monitor();
 
       return true;
     } catch (error) {
@@ -135,6 +201,9 @@ export class MicrophoneService implements OnDestroy {
     // Create audio context
     this._audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
 
+    this._analyser = this._audioContext.createAnalyser();
+    this._analyser.fftSize = 256;
+
     if (this._config.audio.noiseSuppression) {
       await this._audioContext.audioWorklet.addModule(
         this._config.audio.noiseSuppression.worklet ??
@@ -149,7 +218,7 @@ export class MicrophoneService implements OnDestroy {
     URL.revokeObjectURL(workletURL);
 
     // Create Nodes
-    const source = this._audioContext.createMediaStreamSource(this._stream);
+    this._source = this._audioContext.createMediaStreamSource(this._stream);
 
     // Gain Node
     const gainNode = this._audioContext.createGain();
@@ -172,11 +241,17 @@ export class MicrophoneService implements OnDestroy {
         maxChannels: 1, // Standard for mono microphone input
       });
 
-      source.connect(rnnoiseNode);
+      this._source.connect(rnnoiseNode);
       rnnoiseNode.connect(gainNode);
     } else {
-      source.connect(gainNode);
+      this._source.connect(gainNode);
     }
+
+    this._source.connect(this._analyser);
+
+    // loop back mic sound
+    if (this._config.audio.loopBackToSpeakers)
+      this._analyser.connect(this.audioContext!.destination);
 
     // Custom Worklet Node
     const workletNode = new AudioWorkletNode(this._audioContext, MICROPHONE_PROCESSOR_NAME);

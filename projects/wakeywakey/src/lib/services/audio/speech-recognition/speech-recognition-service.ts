@@ -60,6 +60,11 @@ export class SpeechRecognitionService implements OnDestroy {
     this._recognition.continuous = true; // Keep listening even if the user pauses
     this._recognition.interimResults = true; // Show results while the user is still speaking
 
+    this._recognition.onend = () => {
+      this.reset();
+      this.init(); // start
+    };
+
     // 3. Handle Results
     this._recognition.onresult = (event) => {
       this._transcript = '';

@@ -1,7 +1,6 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
 import {
   concatMap,
-  delay,
   distinctUntilChanged,
   EMPTY,
   filter,
@@ -25,7 +24,7 @@ import { SpeechEvent } from '../event/event-service.type';
 import { DEFAULT_INFERENCE_SCORE } from '../model/model-service.const';
 import { VAD_HANGOVER_FRAMES, VadState } from '../model/model-service.type';
 import { PipelineService } from '../pipeline/pipeline-service';
-import { DEFAULT_SILENCE_DURATION } from './audio-service.const';
+import { DEFAULT_SILENCE_DURATION, DEFAULT_SPEECH_THRESHOLD_TIME } from './audio-service.const';
 import { MicrophoneService } from './microphone-service/microphone-service';
 import { SpeechRecognitionService } from './speech-recognition/speech-recognition-service';
 import { VadService } from './vad-service/vad-service';
@@ -91,7 +90,8 @@ export class AudioService implements OnDestroy {
       // Fire a speech event
       this._event.speech.next({
         ...data,
-        vadScore: await this._vad.score(data.sample),
+        sample: this._mic.isMuted ? new Float32Array(1280).fill(0) : data.sample, // no speech data if muted
+        vadScore: await this._vad.score(data.sample), // emit vad score even if muted
         get hasVoiceActivity() {
           return this.vadScore > (that._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD);
         },
@@ -127,6 +127,7 @@ export class AudioService implements OnDestroy {
    */
   forceEndRecording() {
     this._endCurrentRecording = true;
+    this._isInitialized = false;
 
     this._event.silence.next({
       chunk: new Float32Array(),
@@ -153,15 +154,31 @@ export class AudioService implements OnDestroy {
 
     this._subs.sink = this._event.speech
       .pipe(
+        filter(() => !this._isInitialized && !this._mic.isMuted),
         withLatestFrom(vad$),
         concatMap(async ([speech, vadState]) => {
           const score = await this._pipeline.run(speech);
           return { speech, score, chunk: vadState.buffer };
         }),
-        filter(
-          ({ score }) =>
-            score > (this._config.onnx.wakewordInferenceThreshold ?? DEFAULT_INFERENCE_SCORE),
-        ),
+        filter(({ score }) => {
+          if (this._config.onnx.wakeword) {
+            const transcriptArray = this._speechRecognition.transcript
+              .toLowerCase()
+              .trim()
+              .split(' ');
+
+            // use speech recognition for wake word identification
+            if (transcriptArray.length === this._config.onnx.wakeword.length)
+              for (const idx in this._config.onnx.wakeword)
+                if (
+                  +idx < transcriptArray.length &&
+                  transcriptArray[idx].includes(this._config.onnx.wakeword[idx].toLowerCase())
+                )
+                  return true;
+          }
+
+          return score > (this._config.onnx.wakewordInferenceThreshold ?? DEFAULT_INFERENCE_SCORE);
+        }),
       )
       .subscribe(({ speech, score, chunk }) => {
         this._event.wakeword.next({ ...speech, inferenceScore: score, chunk });
@@ -174,41 +191,59 @@ export class AudioService implements OnDestroy {
   private _captureCommandAfterWakeword() {
     const SILENCE_DURATION = this._config.audio.silenceDuration ?? DEFAULT_SILENCE_DURATION;
     const VAD_THRESHOLD = this._config.audio.vadThreshold ?? DEFAULT_VAD_THRESHOLD;
+    const PRE_ROLL_MS = this._config.audio.speechThresholdTime ?? DEFAULT_SPEECH_THRESHOLD_TIME;
+    const CHUNK_DURATION_MS = 80; // Each speech event is fired (by audio processor) at 80 ms
+    const MAX_SLIDING_WINDOW_CHUNKS = Math.ceil(PRE_ROLL_MS / CHUNK_DURATION_MS);
 
-    // --- TRIGGER 1: Wakeword ---
+    // speech sliding window state
+    const speechSlidingWindow: Float32Array[] = [];
+
+    // trigger 1: wakeword
     const wakewordTrigger$ = this._event.wakeword.pipe(
       filter(() => !this._isRecording), // Ignore wakeword if already recording
       map(() => [] as Float32Array[]),
     );
 
-    // --- TRIGGER 2: Continuous VAD > THRESHOLD for 1 second ---
+    // trigger 2: Continuous VAD > THRESHOLD
     const continuousVadTrigger$ = this._event.speech.pipe(
+      // intercept the raw stream to constantly update the threshold window
+      tap((s) => {
+        // Only buffer if we aren't already formally recording
+        if (!this._isRecording && this._isInitialized) {
+          speechSlidingWindow.push(s.sample);
+          // Keep the array length strictly to our configured window size
+          if (speechSlidingWindow.length > MAX_SLIDING_WINDOW_CHUNKS) speechSlidingWindow.shift();
+        }
+      }),
+
+      // check VAD score
       map((s) => s.vadScore > VAD_THRESHOLD),
-      filter(() => !this._isRecording && this._isInitialized), // Ignore and prevent background buffering if already recording
+      filter(() => !this._isRecording && this._isInitialized),
       distinctUntilChanged(),
+
       switchMap((isVoiceActive) => {
-        if (!isVoiceActive) return EMPTY; // Cancel if voice stops
+        if (!isVoiceActive) return EMPTY; // Cancel if voice stops before threshold
 
         this._speechRecognition.reset();
 
-        const bufferedChunks: Float32Array[] = [];
+        // PRE-FILL the actual recording buffer with our duration (ex: 300ms) look back window!
+        // clone so future sliding window updates don't mutate the captured audio.
+        const bufferedChunks: Float32Array[] = [...speechSlidingWindow];
 
-        // 1. Accumulate audio chunks silently
+        // continue accumulating new chunks silently while we wait for the timer
         const buffer$ = this._event.speech.pipe(
           tap((s) => bufferedChunks.push(s.sample)),
-          ignoreElements(), // Prevents this stream from emitting down the pipe
+          ignoreElements(),
         );
 
-        // 2. Timer that emits the accumulated chunks after 1 second
-        const timer$ = timer(300).pipe(map(() => bufferedChunks));
+        // timer that emits the fully accumulated chunks (pre-roll)
+        const timer$ = timer(PRE_ROLL_MS).pipe(map(() => bufferedChunks));
 
-        // Merge both. If the timer fires, take(1) stops the buffer$ stream.
-        // If isVoiceActive turns false before 1s, switchMap cancels both.
         return merge(buffer$, timer$).pipe(take(1));
       }),
     );
 
-    // --- COMBINE TRIGGERS ---
+    // combine triggers
     const startRecordingTrigger$ = merge(
       wakewordTrigger$.pipe(
         tap(() => {
@@ -217,16 +252,15 @@ export class AudioService implements OnDestroy {
       ),
       continuousVadTrigger$,
     ).pipe(
-      throttleTime(1000), // Prevent double-firing if wakeword and voice overlap
+      throttleTime(this._config.throttleTime), // Prevent double-firing if wakeword and voice overlap
     );
 
-    // --- MAIN RECORDING PIPELINE ---
+    // recording pipeline
     this._subs.sink = startRecordingTrigger$
       .pipe(
         tap(() => {
           this._isRecording = true;
           this._speechRecognition.reset();
-          this._event.recording.next(); // recording event
         }),
 
         switchMap((bufferedChunks) => {
@@ -234,7 +268,16 @@ export class AudioService implements OnDestroy {
           const commandChunks: Float32Array[] = [...bufferedChunks];
 
           const speech$ = this._event.speech.pipe(
-            tap((speech) => commandChunks.push(speech.sample)),
+            tap((speech) => {
+              commandChunks.push(speech.sample);
+
+              if (this._isRecording)
+                // emit recording events
+                this._event.recording.next({
+                  chunk: this._flatten(commandChunks),
+                  transcript: this._speechRecognition.transcript,
+                });
+            }),
             share(),
           );
 
@@ -243,9 +286,8 @@ export class AudioService implements OnDestroy {
             distinctUntilChanged(), // only emit when silence state changes
           );
 
-          // 1. Normal silence timeout logic
+          // silence timeout logic
           const normalSilenceTimeout$ = silence$.pipe(
-            delay(500),
             switchMap((isSilent) => {
               if (!isSilent) {
                 return EMPTY; // if voice cancel the timer
@@ -260,10 +302,9 @@ export class AudioService implements OnDestroy {
             }),
           );
 
-          // 2. Force complete logic checking the variable
+          // force end recording
           const forceComplete$ = speech$.pipe(filter(() => this._endCurrentRecording));
 
-          // 3. Complete whenever the timer fires OR the flag is set to true
           return merge(normalSilenceTimeout$, forceComplete$).pipe(
             take(1),
             map(() => this._flatten(commandChunks)),
@@ -272,7 +313,8 @@ export class AudioService implements OnDestroy {
       )
       .subscribe({
         next: (chunk) => {
-          const interimResponse = this._config.mode === 'DEFAULT' ? false : true;
+          const interimResponse =
+            this._config.mode === 'DEFAULT' || this._config.mode === 'PTT' ? false : true;
 
           this._event.silence.next({
             chunk,
@@ -281,10 +323,11 @@ export class AudioService implements OnDestroy {
           }); // emit silence event
 
           // Default case
-          if (this._config.mode === 'DEFAULT') {
+          if (this._config.mode === 'DEFAULT' || this._config.mode === 'PTT') {
             this._isInitialized = false;
-            this._endCurrentRecording = false; // reset flag after recording ends
           }
+
+          this._endCurrentRecording = false; // reset flag after recording ends
 
           this._isRecording = false;
         },

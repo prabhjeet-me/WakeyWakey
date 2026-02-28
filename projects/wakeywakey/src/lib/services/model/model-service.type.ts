@@ -30,6 +30,14 @@ export interface OnnxConfig {
   };
 
   /**
+   * String representation of wakeword
+   *
+   * Ex 1: ['hey', 'jarvis']
+   * Ex 2: ['alexa']
+   */
+  wakeword?: string[];
+
+  /**
    * Path that contains onnx wasm runtime files
    *
    * Default: [basePath]/wasm
