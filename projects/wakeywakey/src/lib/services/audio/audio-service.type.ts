@@ -12,6 +12,11 @@ export interface AudioConfig {
   vadThreshold?: number;
 
   /**
+   * Emit mic sound to speakers
+   */
+  loopBackToSpeakers?: boolean;
+
+  /**
    * Silence duration
    *
    * Default: 1000ms

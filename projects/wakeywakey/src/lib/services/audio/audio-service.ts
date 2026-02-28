@@ -181,8 +181,6 @@ export class AudioService implements OnDestroy {
         }),
       )
       .subscribe(({ speech, score, chunk }) => {
-        console.log('called');
-
         this._event.wakeword.next({ ...speech, inferenceScore: score, chunk });
       });
   }

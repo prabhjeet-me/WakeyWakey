@@ -42,6 +42,13 @@ export interface Config {
    * Default: /wakeywakey
    */
   basePath?: string;
+
+  /**
+   * Key to use to activate listening (instead of wakeword)
+   *
+   * 'code' property of KeyboardEvent
+   */
+  hotkey?: string;
 }
 
 /**

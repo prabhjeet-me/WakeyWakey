@@ -45,6 +45,13 @@ export class ConfigService {
    * Base path of assets
    */
   get basePath() {
-    return this._config.basePath || '/wakeywakey';
+    return this._config.basePath ?? '/wakeywakey';
+  }
+
+  /**
+   * Hotkey
+   */
+  get hotkey() {
+    return this._config.hotkey ?? 'Space';
   }
 }

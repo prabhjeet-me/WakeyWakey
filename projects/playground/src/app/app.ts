@@ -21,6 +21,7 @@ export class App {
   rms = 0;
   db = 0;
   i = 0;
+  bridge!: WakeyWakeyBridgeService;
 
   exception(error: Error) {
     console.error(error);
@@ -48,8 +49,39 @@ export class App {
     if (ev.transcript) console.log(ev.transcript);
   }
 
-  ready(ev: WakeyWakeyBridgeService) {
-    console.log(ev);
+  async play() {
+    try {
+      // 1. Fetch the file
+      const response = await fetch('/sound.mp3');
+      const arrayBuffer = await response.arrayBuffer();
+
+      // 2. Decode the compressed file (.mp3, .ogg, .wav) into raw audio
+      const audioBuffer = await this.bridge!.mic.audioContext!.decodeAudioData(arrayBuffer);
+
+      this.bridge.speaker.playAudioBuffer(audioBuffer);
+    } catch (err) {
+      console.error('Error decoding audio file:', err);
+    }
+  }
+
+  async ready(ev: WakeyWakeyBridgeService) {
+    this.bridge = ev;
+    // setTimeout(() => {
+    // ev.event.wakeword.next({
+    //   inferenceScore: 0,
+    //   chunk: [],
+    //   vadScore: 0,
+    //   hasVoiceActivity: false,
+    //   sample: new Float32Array(),
+    //   rms: 0,
+    //   db: 0,
+    //   dbNormalized: 0,
+    // });
+    // ev.orbComponentService.setState('speaking');
+    // ev.speaker.playAudio('/sound.mp3');
+    // }, 5000);
+    // ev.orbComponentService.setState('speaking');
+    // ev.speaker.playAudio('/sound.mp3');
   }
 
   wavBlobUrl(text: string, audioUrl?: string) {

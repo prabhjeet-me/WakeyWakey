@@ -18,6 +18,7 @@ import { MicrophoneService } from '../../services/audio/microphone-service/micro
 import { ConfigService } from '../../services/config/config-service';
 import { EventService } from '../../services/event/event-service';
 import { PlatformService } from '../../services/platform/platform-service';
+import { OrbComponentService } from './orb-component-service';
 
 export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
 
@@ -52,7 +53,8 @@ export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
   ],
 })
 export class OrbComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('rendererContainer', { static: true }) rendererContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('rendererContainer', { static: true })
+  private _rendererContainer!: ElementRef<HTMLDivElement>;
 
   private readonly _config = inject(ConfigService);
   private readonly _platform = inject(PlatformService);
@@ -60,21 +62,21 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
   private readonly _mic = inject(MicrophoneService);
   private readonly _event = inject(EventService);
   private readonly _ngZone = inject(NgZone);
+  private readonly _service = inject(OrbComponentService);
   private readonly _subs = new SubSink();
 
   // Three.js Core
-  private scene!: THREE.Scene;
-  private camera!: THREE.PerspectiveCamera;
-  private renderer!: THREE.WebGLRenderer;
-  private sphere!: THREE.Points;
-  private material!: THREE.ShaderMaterial;
-  private animationFrameId!: number;
-  private clock = new THREE.Clock();
-  private geometry!: THREE.BufferGeometry;
+  private _scene!: THREE.Scene;
+  private _camera!: THREE.PerspectiveCamera;
+  private _renderer!: THREE.WebGLRenderer;
+  private _sphere!: THREE.Points;
+  private _material!: THREE.ShaderMaterial;
+  private _animationFrameId!: number;
+  private _clock = new THREE.Clock();
+  private _geometry!: THREE.BufferGeometry;
 
   // Audio Processing
-  private analyser?: AnalyserNode;
-  private dataArray?: Uint8Array;
+  private dataArray!: Uint8Array<ArrayBuffer>;
   private micVolume = 0;
 
   // State Management
@@ -129,96 +131,112 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this._platform.isServer) return;
 
+    this.dataArray = new Uint8Array(this._mic.analyzer!.frequencyBinCount);
     this._loadSubscribers();
-    this._setupAudioAnalyser();
 
     // MUST run outside Angular to prevent CD loops
     this._ngZone.runOutsideAngular(() => {
       this._initThreeJs();
       this._animate();
     });
-
-    this.setState('idle');
   }
 
   ngOnDestroy(): void {
     if (this._platform.isServer) return;
 
-    cancelAnimationFrame(this.animationFrameId);
+    cancelAnimationFrame(this._animationFrameId);
+
     this._subs.unsubscribe();
 
-    if (this.renderer) {
-      this.renderer.dispose();
-      this.renderer.forceContextLoss();
+    if (this._renderer) {
+      this._renderer.dispose();
+      this._renderer.forceContextLoss();
       // Remove canvas from DOM to ensure cleanup
-      const domElement = this.renderer.domElement;
+      const domElement = this._renderer.domElement;
       if (domElement && domElement.parentNode) {
         domElement.parentNode.removeChild(domElement);
       }
     }
 
-    if (this.geometry) this.geometry.dispose();
-    if (this.material) this.material.dispose();
+    if (this._geometry) this._geometry.dispose();
+    if (this._material) this._material.dispose();
 
     // Allow garbage collection
-    (this.scene as any) = null;
-    (this.camera as any) = null;
-    (this.renderer as any) = null;
+    (this._scene as any) = null;
+    (this._camera as any) = null;
+    (this._renderer as any) = null;
   }
 
-  @HostListener('window:keydown.Space', ['$event'])
-  handleSpacebarPress(event: Event): void {
+  /**
+   * Space bar press
+   */
+  @HostListener('window:keydown', ['$event'])
+  handleSpacebarPress(event: KeyboardEvent): void {
+    if (event.code !== this._config.hotkey) return;
+
     event.preventDefault();
     this.toggleRecording();
   }
 
+  /**
+   * Toggle recording
+   */
   toggleRecording() {
     this._audio.toggleRecording();
   }
 
+  /**
+   * Set state of orb
+   *
+   * @param state orb state
+   */
   setState(state: AgentState): void {
-    this.currentState = state;
     const profile = this.agentProfiles[state];
-    if (!profile) return;
 
+    this.currentState = state;
     this.targets = { ...profile };
     this.targetColorBase.set(profile.base);
     this.targetColorPeak.set(profile.peak);
   }
 
+  /**
+   * Subscriptions
+   */
   private _loadSubscribers(): void {
     this._subs.sink = this._event.speech.subscribe((data) => {
       this.micVolume = this._mic.isMuted ? 0 : data.dbNormalized;
     });
 
-    this._subs.sink = this._event.wakeword.subscribe(() => {
-      this.setState('listening');
-    });
+    // only update orb state if mode is auto
+    if (!this._config.orb?.mode || this._config.orb?.mode === 'auto') {
+      // after wakeword, set to listening
+      this._subs.sink = this._event.wakeword.subscribe(() => {
+        this.setState('listening');
+      });
 
-    this._subs.sink = this._event.silence.subscribe((ev) => {
-      if (ev.interimResponse) this.setState('thinking');
-      else this.setState('idle');
-    });
+      // after silence, set thinking or idle
+      this._subs.sink = this._event.silence.subscribe((ev) => {
+        if (ev.interimResponse) this.setState('thinking');
+        else this.setState('idle');
+      });
 
-    this._subs.sink = this._event.recording.subscribe(() => {
-      this.setState('listening');
-    });
-  }
+      // if recording started
+      this._subs.sink = this._event.recording.subscribe(() => {
+        this.setState('listening');
+      });
 
-  private _setupAudioAnalyser(): void {
-    if (this._mic.audioContext && this._mic.sourceNode) {
-      const audioCtx = this._mic.audioContext;
-      this.analyser = audioCtx.createAnalyser();
-      this.analyser.fftSize = 256;
-      this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-      this._mic.sourceNode.connect(this.analyser);
+      // state change using service
+      this._subs.sink = this._service.state.subscribe((state) => {
+        this.setState(state);
+      });
     }
   }
 
+  /**
+   * Speech volume for animation
+   */
   private _getTTSVolume(): number {
-    if (!this.analyser || !this.dataArray) return 0;
-
-    this.analyser.getByteFrequencyData(this.dataArray as any);
+    this._mic.analyzer!.getByteFrequencyData(this.dataArray as any);
     let sum = 0;
     for (let i = 0; i < this.dataArray.length; i++) {
       sum += this.dataArray[i];
@@ -226,21 +244,24 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     return sum / this.dataArray.length / 255.0;
   }
 
+  /**
+   * Init
+   */
   private _initThreeJs(): void {
     const size = this.orbSize;
 
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
-    this.camera.position.z = 6;
+    this._scene = new THREE.Scene();
+    this._camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    this._camera.position.z = 6;
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(size, size);
+    this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this._renderer.setSize(size, size);
 
-    this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
+    this._rendererContainer.nativeElement.appendChild(this._renderer.domElement);
 
-    const particlesCount = this._config.orb?.particlesCount ?? 20000;
-    this.geometry = new THREE.BufferGeometry();
+    const particlesCount = this._config.orb?.particlesCount ?? 30000;
+    this._geometry = new THREE.BufferGeometry();
     const posArray = new Float32Array(particlesCount * 3);
     const randomArray = new Float32Array(particlesCount);
     const radius = this._config.orb?.radius ?? 1.8;
@@ -255,10 +276,10 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
       randomArray[i] = Math.random();
     }
 
-    this.geometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(randomArray, 1));
+    this._geometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    this._geometry.setAttribute('aRandom', new THREE.BufferAttribute(randomArray, 1));
 
-    this.material = new THREE.ShaderMaterial({
+    this._material = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
         uSpike: { value: 0.05 },
@@ -276,15 +297,18 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
       depthWrite: false,
     });
 
-    this.sphere = new THREE.Points(this.geometry, this.material);
-    this.scene.add(this.sphere);
+    this._sphere = new THREE.Points(this._geometry, this._material);
+    this._scene.add(this._sphere);
   }
 
+  /**
+   * Animator
+   */
   private _animate = (): void => {
-    this.animationFrameId = requestAnimationFrame(this._animate);
-    const elapsedTime = this.clock.getElapsedTime();
+    this._animationFrameId = requestAnimationFrame(this._animate);
+    const elapsedTime = this._clock.getElapsedTime();
 
-    this.material.uniforms['uTime'].value = elapsedTime;
+    this._material.uniforms['uTime'].value = elapsedTime;
 
     let dynamicSpike = this.targets.spike;
     let dynamicPulse = this.targets.pulse;
@@ -293,31 +317,34 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
       dynamicSpike += this.micVolume * 1.0;
     } else if (this.currentState === 'speaking') {
       const ttsVolume = this._getTTSVolume();
-      dynamicPulse += ttsVolume * 15;
+      dynamicPulse += ttsVolume * 0.5;
     }
 
     const lerpFactor = 0.08;
-    this.material.uniforms['uSpike'].value +=
-      (dynamicSpike - this.material.uniforms['uSpike'].value) * lerpFactor;
-    this.material.uniforms['uPulse'].value +=
-      (dynamicPulse - this.material.uniforms['uPulse'].value) * lerpFactor;
+    this._material.uniforms['uSpike'].value +=
+      (dynamicSpike - this._material.uniforms['uSpike'].value) * lerpFactor;
+    this._material.uniforms['uPulse'].value +=
+      (dynamicPulse - this._material.uniforms['uPulse'].value) * lerpFactor;
 
-    this.material.uniforms['uNoiseScale'].value +=
-      (this.targets.noiseScale - this.material.uniforms['uNoiseScale'].value) * lerpFactor;
-    this.material.uniforms['uSpeed'].value +=
-      (this.targets.speed - this.material.uniforms['uSpeed'].value) * lerpFactor;
-    this.material.uniforms['uTwist'].value +=
-      (this.targets.twist - this.material.uniforms['uTwist'].value) * lerpFactor;
+    this._material.uniforms['uNoiseScale'].value +=
+      (this.targets.noiseScale - this._material.uniforms['uNoiseScale'].value) * lerpFactor;
+    this._material.uniforms['uSpeed'].value +=
+      (this.targets.speed - this._material.uniforms['uSpeed'].value) * lerpFactor;
+    this._material.uniforms['uTwist'].value +=
+      (this.targets.twist - this._material.uniforms['uTwist'].value) * lerpFactor;
 
-    this.material.uniforms['uColorBase'].value.lerp(this.targetColorBase, lerpFactor);
-    this.material.uniforms['uColorPeak'].value.lerp(this.targetColorPeak, lerpFactor);
+    this._material.uniforms['uColorBase'].value.lerp(this.targetColorBase, lerpFactor);
+    this._material.uniforms['uColorPeak'].value.lerp(this.targetColorPeak, lerpFactor);
 
-    this.sphere.rotation.y = elapsedTime * 0.1;
-    this.sphere.rotation.z = elapsedTime * 0.01;
+    this._sphere.rotation.y = elapsedTime * 0.1;
+    this._sphere.rotation.z = elapsedTime * 0.01;
 
-    this.renderer.render(this.scene, this.camera);
+    this._renderer.render(this._scene, this._camera);
   };
 
+  /**
+   * Vertex shader
+   */
   private _getVertexShader(): string {
     return `
       uniform float uTime;
@@ -401,6 +428,9 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     `;
   }
 
+  /**
+   * Fragment shader
+   */
   private _getFragmentShader(): string {
     return `
       varying float vDisplacement;

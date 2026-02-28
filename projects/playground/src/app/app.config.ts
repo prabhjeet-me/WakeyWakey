@@ -5,7 +5,6 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideWakeyWakey } from 'wakeywakey';
 import { routes } from './app.routes';
 
@@ -14,7 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
-    provideClientHydration(withEventReplay()),
+    // provideClientHydration(withEventReplay()),
     provideWakeyWakey({
       audio: {
         gain: 1,
