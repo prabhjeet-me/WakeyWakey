@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/member-ordering */
-/* eslint-disable @typescript-eslint/prefer-for-of */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NgClass } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -19,11 +17,11 @@ import { ConfigService } from '../../services/config/config-service';
 import { EventService } from '../../services/event/event-service';
 import { PlatformService } from '../../services/platform/platform-service';
 import { OrbComponentService } from './orb-component-service';
-
-export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
+import { AgentState } from './orb-component.type';
 
 @Component({
   selector: 'app-orb-component',
+  imports: [NgClass],
   template: `
     <div
       #rendererContainer
@@ -34,6 +32,7 @@ export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
       [style.height.px]="orbSize"
       (click)="toggleRecording()"
       (keypress)="toggleRecording()"
+      [ngClass]="{ muted: isMuted }"
     ></div>
   `,
   styles: [
@@ -44,6 +43,9 @@ export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
         align-items: center;
         overflow: hidden;
         cursor: pointer;
+      }
+      .muted {
+        cursor: not-allowed;
       }
       canvas {
         display: block;
@@ -89,6 +91,15 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
       twist: 0.0,
       pulse: 0.0,
       base: '#001133',
+      peak: '#ff4000',
+    },
+    initialized: {
+      spike: 0.05,
+      noiseScale: 1.0,
+      speed: 0.2,
+      twist: 0.0,
+      pulse: 0.0,
+      base: '#001133',
       peak: '#00aaff',
     },
     listening: {
@@ -128,6 +139,10 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     return this._config.orb?.size ?? 400;
   }
 
+  get isMuted() {
+    return this._mic.isMuted;
+  }
+
   ngAfterViewInit(): void {
     if (this._platform.isServer) return;
 
@@ -160,11 +175,6 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
 
     if (this._geometry) this._geometry.dispose();
     if (this._material) this._material.dispose();
-
-    // Allow garbage collection
-    (this._scene as any) = null;
-    (this._camera as any) = null;
-    (this._renderer as any) = null;
   }
 
   /**
@@ -182,6 +192,8 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    * Toggle recording
    */
   toggleRecording() {
+    if (this.isMuted) return;
+
     this._audio.toggleRecording();
   }
 
@@ -204,7 +216,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    */
   private _loadSubscribers(): void {
     this._subs.sink = this._event.speech.subscribe((data) => {
-      this.micVolume = this._mic.isMuted ? 0 : data.dbNormalized;
+      this.micVolume = this.isMuted ? 0 : data.dbNormalized;
     });
 
     // only update orb state if mode is auto
@@ -236,11 +248,8 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    * Speech volume for animation
    */
   private _getTTSVolume(): number {
-    this._mic.analyzer!.getByteFrequencyData(this.dataArray as any);
-    let sum = 0;
-    for (let i = 0; i < this.dataArray.length; i++) {
-      sum += this.dataArray[i];
-    }
+    this._mic.analyzer!.getByteFrequencyData(this.dataArray);
+    const sum = this.dataArray.reduce((a, b) => a + b, 0);
     return sum / this.dataArray.length / 255.0;
   }
 

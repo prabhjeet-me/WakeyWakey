@@ -1,6 +1,7 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
 import { EventService } from '../../event/event-service';
 import { PlatformService } from '../../platform/platform-service';
+import { MicrophoneService } from '../microphone-service/microphone-service';
 
 @Injectable()
 export class SpeechRecognitionService implements OnDestroy {
@@ -9,6 +10,7 @@ export class SpeechRecognitionService implements OnDestroy {
    */
   private readonly _event = inject(EventService);
   private readonly _platform = inject(PlatformService);
+  private readonly _mic = inject(MicrophoneService);
 
   private _recognitionClass!: {
     new (): SpeechRecognition;
@@ -68,6 +70,9 @@ export class SpeechRecognitionService implements OnDestroy {
     // 3. Handle Results
     this._recognition.onresult = (event) => {
       this._transcript = '';
+
+      // Don't capture if muted
+      if (this._mic.isMuted) return;
 
       for (let i = event.resultIndex; i < event.results.length; i++)
         this._transcript += event.results[i][0].transcript;

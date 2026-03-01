@@ -23,6 +23,10 @@ export class App {
   i = 0;
   bridge!: WakeyWakeyBridgeService;
 
+  get isMuted() {
+    return this.bridge?.mic.isMuted || false;
+  }
+
   exception(error: Error) {
     console.error(error);
   }
@@ -49,14 +53,19 @@ export class App {
     if (ev.transcript) console.log(ev.transcript);
   }
 
+  muteUnmute() {
+    this.bridge.mic.isMuted = !this.bridge.mic.isMuted;
+  }
+
   async play() {
     try {
       // 1. Fetch the file
-      const response = await fetch('/sound.mp3');
+      const response = await fetch('/ok.mp3');
       const arrayBuffer = await response.arrayBuffer();
 
       // 2. Decode the compressed file (.mp3, .ogg, .wav) into raw audio
       const audioBuffer = await this.bridge!.mic.audioContext!.decodeAudioData(arrayBuffer);
+      console.log('s');
 
       this.bridge.speaker.playAudioBuffer(audioBuffer);
     } catch (err) {
@@ -66,6 +75,7 @@ export class App {
 
   async ready(ev: WakeyWakeyBridgeService) {
     this.bridge = ev;
+    ev.mic.isMuted = true;
     // setTimeout(() => {
     // ev.event.wakeword.next({
     //   inferenceScore: 0,

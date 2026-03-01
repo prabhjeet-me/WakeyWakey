@@ -12,6 +12,8 @@
   <div class="root">
     <h1>WakeyWakey</h1>
     <h2>Wake Word Detector</h2>
+    <button (click)="muteUnmute()">{{ isMuted ? 'Unmute' : 'Mute' }}</button>
+
     <button (click)="play()">Play</button>
 
     <div class="content">
