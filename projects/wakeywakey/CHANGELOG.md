@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.1.0...@prabhjeet.me/wakeywakey-v2.2.0) (2026-03-01)
+
+
+### Features
+
+* **speaker:** configurable volume for up, down & ping + play ping if silence detected ([26ee01b](https://github.com/prabhjeet-me/WakeyWakey/commit/26ee01bc10394e351384fd962f5de001f58795f3))
+* **speaker:** set source function to change output device ([2d2c148](https://github.com/prabhjeet-me/WakeyWakey/commit/2d2c148971b211646877718a1b86b1cead49b6c1))
+
+
+### Bug Fixes
+
+* **orb:** use timer instead of clock (three) ([a975a55](https://github.com/prabhjeet-me/WakeyWakey/commit/a975a556f10151f0f235c877dbd62e681bf7a754))
+* **provider:** throw if mic not initialized ([c1ddabb](https://github.com/prabhjeet-me/WakeyWakey/commit/c1ddabb6b046accc47250a51945ae5538f3461d6))
+
 ## [2.1.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.0.0...@prabhjeet.me/wakeywakey-v2.1.0) (2026-03-01)
 
 
