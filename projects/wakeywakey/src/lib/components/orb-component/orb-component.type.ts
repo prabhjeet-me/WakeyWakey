@@ -23,4 +23,4 @@ export interface OrbConfig {
   mode?: 'auto' | 'manual';
 }
 
-export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
+export type AgentState = 'idle' | 'initialized' | 'listening' | 'thinking' | 'speaking';

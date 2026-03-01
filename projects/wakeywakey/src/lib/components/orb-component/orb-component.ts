@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NgClass } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -19,11 +20,11 @@ import { ConfigService } from '../../services/config/config-service';
 import { EventService } from '../../services/event/event-service';
 import { PlatformService } from '../../services/platform/platform-service';
 import { OrbComponentService } from './orb-component-service';
-
-export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
+import { AgentState } from './orb-component.type';
 
 @Component({
   selector: 'app-orb-component',
+  imports: [NgClass],
   template: `
     <div
       #rendererContainer
@@ -34,6 +35,7 @@ export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
       [style.height.px]="orbSize"
       (click)="toggleRecording()"
       (keypress)="toggleRecording()"
+      [ngClass]="{ muted: isMuted }"
     ></div>
   `,
   styles: [
@@ -44,6 +46,9 @@ export type AgentState = 'idle' | 'listening' | 'thinking' | 'speaking';
         align-items: center;
         overflow: hidden;
         cursor: pointer;
+      }
+      .muted {
+        cursor: not-allowed;
       }
       canvas {
         display: block;
@@ -89,6 +94,15 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
       twist: 0.0,
       pulse: 0.0,
       base: '#001133',
+      peak: '#ff4000',
+    },
+    initialized: {
+      spike: 0.05,
+      noiseScale: 1.0,
+      speed: 0.2,
+      twist: 0.0,
+      pulse: 0.0,
+      base: '#001133',
       peak: '#00aaff',
     },
     listening: {
@@ -126,6 +140,10 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
 
   get orbSize(): number {
     return this._config.orb?.size ?? 400;
+  }
+
+  get isMuted() {
+    return this._mic.isMuted;
   }
 
   ngAfterViewInit(): void {
@@ -182,6 +200,8 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    * Toggle recording
    */
   toggleRecording() {
+    if (this.isMuted) return;
+
     this._audio.toggleRecording();
   }
 
@@ -204,7 +224,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    */
   private _loadSubscribers(): void {
     this._subs.sink = this._event.speech.subscribe((data) => {
-      this.micVolume = this._mic.isMuted ? 0 : data.dbNormalized;
+      this.micVolume = this.isMuted ? 0 : data.dbNormalized;
     });
 
     // only update orb state if mode is auto
