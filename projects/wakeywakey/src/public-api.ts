@@ -1,3 +1,5 @@
+/// <reference path="./index.d.ts" />
+
 /*
  * Public API Surface of wakeywakey
  */

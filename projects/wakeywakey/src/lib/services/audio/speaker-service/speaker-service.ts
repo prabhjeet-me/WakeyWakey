@@ -29,6 +29,11 @@ export class SpeakerService implements OnDestroy {
   private _nextPlayTime = 0;
   private _sources: AudioBufferSourceNode[] = [];
 
+  /**
+   * List of available microphones
+   */
+  private _speakers: MediaDeviceInfo[] = [];
+
   constructor() {
     if (this._config.audio.sound?.enable === false) return;
 
@@ -62,7 +67,26 @@ export class SpeakerService implements OnDestroy {
       this._upSound.preload = this._downSound.preload = this._pingSound.preload = 'auto';
 
       this._loadSubscriptions();
+
+      // Get speaker list
+      this._speakerList().then((e) => {
+        this._speakers = e;
+      });
     }
+  }
+
+  /**
+   * List of speakers
+   */
+  get speakers() {
+    return this._speakers;
+  }
+
+  /**
+   * Set output source
+   */
+  set source(deviceId: string) {
+    this._setSource(deviceId);
   }
 
   ngOnDestroy(): void {
@@ -160,6 +184,20 @@ export class SpeakerService implements OnDestroy {
   }
 
   /**
+   * Set source
+   *
+   * @param deviceId
+   */
+  private async _setSource(deviceId: string) {
+    if (typeof this._mic.audioContext!.setSinkId === 'function') {
+      await this._mic.audioContext!.setSinkId(deviceId);
+    } else
+      this._event.exception.next(
+        new Error('AudioContext.setSinkId is not supported. Playing on default'),
+      );
+  }
+
+  /**
    * Clear playback queue
    */
   private _clearQueue() {
@@ -188,5 +226,13 @@ export class SpeakerService implements OnDestroy {
     this._subs.sink = this._event.recording.subscribe(() => {
       this._clearQueue();
     });
+  }
+
+  /**
+   * Speakers
+   */
+  private async _speakerList() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((device) => device.kind === 'audiooutput');
   }
 }
