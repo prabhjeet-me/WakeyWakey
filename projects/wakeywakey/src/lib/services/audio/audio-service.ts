@@ -206,6 +206,7 @@ export class AudioService implements OnDestroy {
 
     // trigger 2: Continuous VAD > THRESHOLD
     const continuousVadTrigger$ = this._event.speech.pipe(
+      filter(() => !this._mic.isMuted),
       // intercept the raw stream to constantly update the threshold window
       tap((s) => {
         // Only buffer if we aren't already formally recording
@@ -232,6 +233,7 @@ export class AudioService implements OnDestroy {
 
         // continue accumulating new chunks silently while we wait for the timer
         const buffer$ = this._event.speech.pipe(
+          filter(() => !this._mic.isMuted),
           tap((s) => bufferedChunks.push(s.sample)),
           ignoreElements(),
         );
@@ -252,6 +254,7 @@ export class AudioService implements OnDestroy {
       ),
       continuousVadTrigger$,
     ).pipe(
+      filter(() => !this._mic.isMuted),
       throttleTime(this._config.throttleTime), // Prevent double-firing if wakeword and voice overlap
     );
 
@@ -268,6 +271,7 @@ export class AudioService implements OnDestroy {
           const commandChunks: Float32Array[] = [...bufferedChunks];
 
           const speech$ = this._event.speech.pipe(
+            filter(() => !this._mic.isMuted),
             tap((speech) => {
               commandChunks.push(speech.sample);
 
@@ -359,6 +363,7 @@ export class AudioService implements OnDestroy {
    */
   private _getWakeWordStream() {
     return this._event.speech.pipe(
+      filter(() => !this._mic.isMuted),
       scan(
         (state: VadState, speech: SpeechEvent): VadState => {
           const { hasVoiceActivity, sample } = speech;
