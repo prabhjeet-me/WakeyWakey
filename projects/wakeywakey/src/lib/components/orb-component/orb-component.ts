@@ -74,7 +74,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
   private _sphere!: THREE.Points;
   private _material!: THREE.ShaderMaterial;
   private _animationFrameId!: number;
-  private _clock = new THREE.Clock();
+  private _timer = new THREE.Timer();
   private _geometry!: THREE.BufferGeometry;
 
   // Audio Processing
@@ -152,6 +152,7 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
     // MUST run outside Angular to prevent CD loops
     this._ngZone.runOutsideAngular(() => {
       this._initThreeJs();
+      this._timer.connect(document);
       this._animate();
     });
   }
@@ -315,7 +316,8 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    */
   private _animate = (): void => {
     this._animationFrameId = requestAnimationFrame(this._animate);
-    const elapsedTime = this._clock.getElapsedTime();
+    this._timer.update();
+    const elapsedTime = this._timer.getElapsed();
 
     this._material.uniforms['uTime'].value = elapsedTime;
 
