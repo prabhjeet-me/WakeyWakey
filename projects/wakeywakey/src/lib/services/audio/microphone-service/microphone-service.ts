@@ -187,7 +187,7 @@ export class MicrophoneService implements OnDestroy {
   }
 
   /**
-   * Save microphones
+   * Microphones
    */
   private async _microphoneList() {
     const devices = await navigator.mediaDevices.enumerateDevices();

@@ -24,26 +24,69 @@ export class SpeakerService implements OnDestroy {
 
   private _upSound!: HTMLAudioElement;
   private _downSound!: HTMLAudioElement;
+  private _pingSound!: HTMLAudioElement;
 
   private _nextPlayTime = 0;
   private _sources: AudioBufferSourceNode[] = [];
+
+  /**
+   * List of available microphones
+   */
+  private _speakers: MediaDeviceInfo[] = [];
 
   constructor() {
     if (this._config.audio.sound?.enable === false) return;
 
     // Audio is only available in browser context
     if (this._platform.isBrowser) {
+      // up
       this._upSound = new Audio(
         this._config.audio.sound?.up ?? `${this._config.basePath}/sounds/up.mp3`,
       );
+
+      this._upSound.volume =
+        this._config.audio.sound?.upVolume ?? this._config.audio.sound?.masterVolume ?? 0.5;
+
+      // down
       this._downSound = new Audio(
         this._config.audio.sound?.down ?? `${this._config.basePath}/sounds/down.mp3`,
       );
 
-      this._upSound.preload = this._downSound.preload = 'auto';
+      this._downSound.volume =
+        this._config.audio.sound?.downVolume ?? this._config.audio.sound?.masterVolume ?? 0.5;
+
+      // ping
+      this._pingSound = new Audio(
+        this._config.audio.sound?.ping ?? `${this._config.basePath}/sounds/ping.mp3`,
+      );
+
+      this._pingSound.volume =
+        this._config.audio.sound?.pingVolume ?? this._config.audio.sound?.masterVolume ?? 0.1;
+
+      // Preload
+      this._upSound.preload = this._downSound.preload = this._pingSound.preload = 'auto';
 
       this._loadSubscriptions();
+
+      // Get speaker list
+      this._speakerList().then((e) => {
+        this._speakers = e;
+      });
     }
+  }
+
+  /**
+   * List of speakers
+   */
+  get speakers() {
+    return this._speakers;
+  }
+
+  /**
+   * Set output source
+   */
+  set source(deviceId: string) {
+    this._setSource(deviceId);
   }
 
   ngOnDestroy(): void {
@@ -132,6 +175,29 @@ export class SpeakerService implements OnDestroy {
   }
 
   /**
+   * Play ping
+   */
+  playPing() {
+    if (this._config.audio.sound?.enable === false) return;
+
+    this._pingSound.play();
+  }
+
+  /**
+   * Set source
+   *
+   * @param deviceId
+   */
+  private async _setSource(deviceId: string) {
+    if (typeof this._mic.audioContext!.setSinkId === 'function') {
+      await this._mic.audioContext!.setSinkId(deviceId);
+    } else
+      this._event.exception.next(
+        new Error('AudioContext.setSinkId is not supported. Playing on default'),
+      );
+  }
+
+  /**
    * Clear playback queue
    */
   private _clearQueue() {
@@ -153,11 +219,20 @@ export class SpeakerService implements OnDestroy {
     // If default, on silence, play down
     this._subs.sink = this._event.silence.subscribe((ev) => {
       if (!ev.interimResponse) this.playDown();
+      else this.playPing();
     });
 
     // If recording event
     this._subs.sink = this._event.recording.subscribe(() => {
       this._clearQueue();
     });
+  }
+
+  /**
+   * Speakers
+   */
+  private async _speakerList() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((device) => device.kind === 'audiooutput');
   }
 }

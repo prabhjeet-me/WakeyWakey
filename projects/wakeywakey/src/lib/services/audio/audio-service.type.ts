@@ -86,6 +86,11 @@ export interface AudioConfig {
     enable?: boolean;
 
     /**
+     * Overall volume (0-1)
+     */
+    masterVolume?: number;
+
+    /**
      * Path of sound to be played when wake word is detected
      *
      * Default: [basePath]/sounds/up.mp3
@@ -93,10 +98,40 @@ export interface AudioConfig {
     up?: string;
 
     /**
-     * Path of sound to be played when system is done recording and silence is detected
+     * Up volume (0-1)
+     *
+     * Default: masterVolume (if defined) else 0.5
+     */
+    upVolume?: number;
+
+    /**
+     * Path of sound to be played when
+     * 1. DEFAULT | PTT: system is done recording and silence is detected
+     * 2. VOICE_CHAT: user clicks on orb to stop listening
      *
      * Default: [basePath]/sounds/down.mp3
      */
     down?: string;
+
+    /**
+     * Down volume (0-1)
+     *
+     * Default: masterVolume (if defined) else 0.5
+     */
+    downVolume?: number;
+
+    /**
+     * Path of sound to be played when system is done recording and silence is detected (in case of VOICE_CHAT)
+     *
+     * Default: [basePath]/sounds/ping.mp3
+     */
+    ping?: string;
+
+    /**
+     * Ping volume (0-1)
+     *
+     * Default: masterVolume (if defined) else 0.1
+     */
+    pingVolume?: number;
   };
 }

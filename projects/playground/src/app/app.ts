@@ -63,6 +63,8 @@ export class App {
       const response = await fetch('/ok.mp3');
       const arrayBuffer = await response.arrayBuffer();
 
+      this.bridge.speaker.source = 'default';
+
       // 2. Decode the compressed file (.mp3, .ogg, .wav) into raw audio
       const audioBuffer = await this.bridge!.mic.audioContext!.decodeAudioData(arrayBuffer);
       console.log('s');

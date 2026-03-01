@@ -16,6 +16,7 @@ module.exports = defineConfig([
     processor: angular.processInlineTemplates,
     rules: {
       '@typescript-eslint/adjacent-overload-signatures': 'off',
+      '@typescript-eslint/triple-slash-reference': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {
