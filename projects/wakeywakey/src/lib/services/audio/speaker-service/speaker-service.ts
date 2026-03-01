@@ -101,6 +101,14 @@ export class SpeakerService implements OnDestroy {
 
     this._nextPlayTime += audioBuffer.duration;
 
+    source.onended = () => {
+      this._sources.shift();
+
+      if (!this._sources.length)
+        if (!this._config.orb?.mode || this._config.orb?.mode === 'auto')
+          this._orb.setState('initialized'); // reset
+    };
+
     if (!this._config.orb?.mode || this._config.orb?.mode === 'auto')
       this._orb.setState('speaking'); // speaking
   }
