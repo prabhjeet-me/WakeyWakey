@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.0.0...@prabhjeet.me/wakeywakey-v2.1.0) (2026-03-01)
+
+
+### Features
+
+* **orb:** added initialized state ([2635345](https://github.com/prabhjeet-me/WakeyWakey/commit/26353452634cfc956b43546d56263aafb29ce7cd))
+
+
+### Bug Fixes
+
+* **audio:** filter speech events to avoid firing if muted ([f1179b0](https://github.com/prabhjeet-me/WakeyWakey/commit/f1179b08d5ba1475e0b27f2354767a90d209907a))
+* **orb:** eslint fixes ([aa68916](https://github.com/prabhjeet-me/WakeyWakey/commit/aa689165b6147190f4c428adb9b56bd7f94d4bae))
+* **speaker:** reset orb state after audio chunks are done playing ([fae9bcb](https://github.com/prabhjeet-me/WakeyWakey/commit/fae9bcb74deebb7e26f67f00f4b894c60a1a18d2))
+* **speech-recognition:** don't transcribe if muted ([6b3fbd5](https://github.com/prabhjeet-me/WakeyWakey/commit/6b3fbd54c8ff49d6cb8d744ef204f08346705599))
+
 ## [2.0.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v1.1.0...@prabhjeet.me/wakeywakey-v2.0.0) (2026-02-28)
 
 
