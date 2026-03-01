@@ -64,6 +64,8 @@ export function provideWakeyWakey(config: Config) {
         _mic.init(),
       ]);
 
+      if (!sessions[4]) throw new Error('Failed to initialize mic!');
+
       // set sessions
       _model.session = {
         melspectrogram: sessions[0] as InferenceSession,
