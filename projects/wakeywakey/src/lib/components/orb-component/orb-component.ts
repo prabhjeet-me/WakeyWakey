@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/member-ordering */
-/* eslint-disable @typescript-eslint/prefer-for-of */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NgClass } from '@angular/common';
 import {
   AfterViewInit,
@@ -178,11 +175,6 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
 
     if (this._geometry) this._geometry.dispose();
     if (this._material) this._material.dispose();
-
-    // Allow garbage collection
-    (this._scene as any) = null;
-    (this._camera as any) = null;
-    (this._renderer as any) = null;
   }
 
   /**
@@ -256,11 +248,8 @@ export class OrbComponent implements AfterViewInit, OnDestroy {
    * Speech volume for animation
    */
   private _getTTSVolume(): number {
-    this._mic.analyzer!.getByteFrequencyData(this.dataArray as any);
-    let sum = 0;
-    for (let i = 0; i < this.dataArray.length; i++) {
-      sum += this.dataArray[i];
-    }
+    this._mic.analyzer!.getByteFrequencyData(this.dataArray);
+    const sum = this.dataArray.reduce((a, b) => a + b, 0);
     return sum / this.dataArray.length / 255.0;
   }
 
