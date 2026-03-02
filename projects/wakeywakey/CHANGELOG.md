@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.2.0...@prabhjeet.me/wakeywakey-v2.2.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* **orb:** export AgentState ([709aaf9](https://github.com/prabhjeet-me/WakeyWakey/commit/709aaf99d1276796da16aa631b13cedce4b63097))
+* **orb:** export AgentState ([60cb08f](https://github.com/prabhjeet-me/WakeyWakey/commit/60cb08f2d7efa4561c6be7a3c57d7054517384e8))
+
 ## [2.2.0](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.1.0...@prabhjeet.me/wakeywakey-v2.2.0) (2026-03-01)
 
 
