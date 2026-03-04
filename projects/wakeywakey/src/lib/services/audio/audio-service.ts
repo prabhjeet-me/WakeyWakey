@@ -251,6 +251,8 @@ export class AudioService implements OnDestroy {
         tap(() => {
           if (!this._isInitialized) this._isInitialized = true; // initialized
         }),
+        // if wakeword detected, still wait till user says something
+        switchMap(() => continuousVadTrigger$),
       ),
       continuousVadTrigger$,
     ).pipe(
