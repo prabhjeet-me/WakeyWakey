@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.2](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.2.1...@prabhjeet.me/wakeywakey-v2.2.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* **audio:** after wakeword, continue continuous vad trigger before fi… ([8570a43](https://github.com/prabhjeet-me/WakeyWakey/commit/8570a43da6f8a743fc21ec86a7edc6def7e7a131))
+* **audio:** after wakeword, continue continuous vad trigger before firing silence event ([5f59e90](https://github.com/prabhjeet-me/WakeyWakey/commit/5f59e901836cf03ae56bffc372cdd1f78eb2c628))
+
 ## [2.2.1](https://github.com/prabhjeet-me/WakeyWakey/compare/@prabhjeet.me/wakeywakey-v2.2.0...@prabhjeet.me/wakeywakey-v2.2.1) (2026-03-02)
 
 
